@@ -1,0 +1,300 @@
+package com.signs.yowal;
+
+import android.content.Context;
+import android.util.Base64;
+
+import com.google.common.base.Ascii;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.UnsignedBytes;
+
+import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jf.baksmali.Adaptors.ClassDefinition;
+import org.jf.baksmali.BaksmaliOptions;
+import org.jf.dexlib2.Opcodes;
+import org.jf.dexlib2.analysis.ClassPath;
+import org.jf.dexlib2.analysis.DexClassProvider;
+import org.jf.dexlib2.dexbacked.DexBackedClassDef;
+import org.jf.dexlib2.dexbacked.DexBackedDexFile;
+import org.jf.dexlib2.dexbacked.raw.ItemType;
+import org.jf.dexlib2.writer.builder.DexBuilder;
+import org.jf.dexlib2.writer.io.MemoryDataStore;
+import org.jf.smali.Smali;
+import org.jf.smali.SmaliOptions;
+import org.jf.util.IndentingWriter;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
+import bin.xml.decode.AXmlDecoder;
+import bin.xml.decode.AXmlResourceParser;
+import bin.xml.decode.XmlPullParser;
+import bin.zip.ZipEntry;
+import bin.zip.ZipFile;
+import bin.zip.ZipOutputStream;
+
+public class SignatureTool {
+    private boolean customApplication = false;
+    private String customApplicationName;
+    private Context mContext;
+    private String outApk;
+    private String packageName;
+    private String signatures;
+    private String srcApk;
+    private String tempApk;
+
+    public SignatureTool(Context context) {
+        mContext = context;
+    }
+
+    public void setPath(String input, String output) {
+        srcApk = input;
+        outApk = output;
+        tempApk = new File(srcApk).getParentFile().toString() + "/.temp";
+    }
+
+    public void Kill() throws Exception {
+        new File(outApk).delete();
+        System.out.println("Чтение подписи:" + srcApk);
+        signatures = getApkSignInfo(srcApk);
+        System.out.println("Чтение APK:" + srcApk);
+        ZipFile zipFile = new ZipFile(srcApk);
+        try {
+            System.out.println("  -- Обработка AndroidManifest.xml");
+            byte[] parseManifest = parseManifest(zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml")));
+            DexBackedDexFile fromInputStream = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(zipFile.getEntry("classes.dex"))));
+            System.out.println("  -- Обработка classes.dex");
+            byte[] processDex = processDex(fromInputStream);
+            System.out.println("\nОптимизация APK:" + outApk);
+            ZipOutputStream zipOutputStream = new ZipOutputStream(new File(tempApk));
+            zipOutputStream.setLevel(1);
+            Enumeration<ZipEntry> entries = zipFile.getEntries();
+            while (entries.hasMoreElements()) {
+                ZipEntry nextElement = entries.nextElement();
+                String name = nextElement.getName();
+                if ((name.startsWith("classes") && name.endsWith("dex")) || name.startsWith("./")) {
+                    zipOutputStream.copyZipEntry(nextElement, zipFile);
+                }
+            }
+            zipOutputStream.close();
+            System.out.println("\nЗапись в APK:" + outApk);
+            try {
+                ZipOutputStream zipFileOut = new ZipOutputStream(new File(outApk));
+
+                zipFileOut.putNextEntry("AndroidManifest.xml");
+                zipFileOut.write(parseManifest);
+                zipFileOut.closeEntry();
+                zipFileOut.putNextEntry("classes.dex");
+                zipFileOut.write(processDex);
+                zipFileOut.closeEntry();
+                FileInputStream fileInputStream = new FileInputStream(tempApk);
+                byte[] bArr = new byte[fileInputStream.available()];
+                fileInputStream.read(bArr);
+                zipFileOut.putNextEntry("assets/hook.apk");
+                zipFileOut.write(bArr);
+                zipFileOut.closeEntry();
+                fileInputStream.close();
+                Enumeration<ZipEntry> entries2 = zipFile.getEntries();
+                while (entries2.hasMoreElements()) {
+                    ZipEntry nextElement2 = entries2.nextElement();
+                    if (!nextElement2.getName().equals("AndroidManifest.xml") && !nextElement2.getName().equals("classes.dex")) {
+                        zipFileOut.copyZipEntry(nextElement2, zipFile);
+                    }
+                }
+                new File(tempApk).delete();
+                zipFile.close();
+            } finally {
+                zipFile.close();
+            }
+        } finally {
+            zipFile.close();
+        }
+    }
+
+    private Certificate @Nullable [] loadCertificates(JarFile jarFile, JarEntry jarEntry, byte[] bArr) {
+        try {
+            InputStream inputStream = jarFile.getInputStream(jarEntry);
+            while (inputStream.read(bArr, 0, bArr.length) != -1) {
+                inputStream.close();
+                if (jarEntry != null) {
+                    return jarEntry.getCertificates();
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private @NotNull String getApkSignInfo(String str) {
+        byte[] bArr = new byte[ItemType.CLASS_DATA_ITEM];
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+        try {
+            JarFile jarFile = new JarFile(str);
+            Certificate[] loadCertificates = loadCertificates(jarFile, jarFile.getJarEntry("AndroidManifest.xml"), bArr);
+            dataOutputStream.write(loadCertificates.length);
+            for (Certificate certificate : loadCertificates) {
+                byte[] encoded = certificate.getEncoded();
+                dataOutputStream.writeInt(encoded.length);
+                dataOutputStream.write(encoded);
+            }
+            jarFile.close();
+            return Base64.encodeToString(byteArrayOutputStream.toByteArray(), 0).replace(IOUtils.LINE_SEPARATOR_UNIX, "\\n");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    private byte @NotNull [] processDex(DexBackedDexFile dexBackedDexFile) throws Exception {
+        ZipFile zipFile = new ZipFile(mContext.getApplicationInfo().publicSourceDir);
+        ZipEntry entry = zipFile.getEntry("classes.dex");
+        DexBuilder dexBuilder = new DexBuilder(Opcodes.getDefault());
+        DexBackedDexFile fromInputStream = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(entry)));
+        StringWriter stringWriter = new StringWriter();
+        IndentingWriter indentingWriter = new IndentingWriter(stringWriter);
+        new ClassDefinition(new BaksmaliOptions(), new ClassPath(Lists.newArrayList(new DexClassProvider(fromInputStream)), false, fromInputStream.getClasses().size()).getClassDef("Lcom/apksignaturekiller/HookApplication;")).writeTo(indentingWriter);
+        indentingWriter.close();
+        String writer = stringWriter.toString();
+        if (customApplication) {
+            if (customApplicationName.startsWith(".")) {
+                if (packageName == null) {
+                    throw new NullPointerException("Package name is null.");
+                }
+                customApplicationName = packageName + customApplicationName;
+            }
+            writer = writer.replace("### Applicaton Data ###", customApplicationName);
+        }
+        if (signatures == null) {
+            throw new NullPointerException("Signatures is null");
+        } else if (Smali.assembleSmaliFile(writer.replace("### Signatures Data ###", signatures), dexBuilder, new SmaliOptions()) == null) {
+            throw new Exception("Parse smali failed");
+        } else {
+            for (DexBackedClassDef dexBackedClassDef : dexBackedDexFile.getClasses()) {
+                dexBuilder.internClassDef(dexBackedClassDef);
+            }
+            MemoryDataStore memoryDataStore = new MemoryDataStore();
+            dexBuilder.writeTo(memoryDataStore);
+            zipFile.close();
+            return Arrays.copyOf(memoryDataStore.getBufferData(), memoryDataStore.getSize());
+        }
+    }
+
+    private byte @NotNull [] parseManifest(InputStream is) throws IOException {
+        AXmlDecoder axml = AXmlDecoder.decode(is);
+        AXmlResourceParser parser = new AXmlResourceParser();
+        parser.open(new ByteArrayInputStream(axml.getData()), axml.mTableStrings);
+        boolean success = false;
+
+        int type;
+        while ((type = parser.next()) != XmlPullParser.END_DOCUMENT) {
+            if (type != XmlPullParser.START_TAG)
+                continue;
+            if (parser.getName().equals("manifest")) {
+                int size = parser.getAttributeCount();
+                for (int i = 0; i < size; ++i) {
+                    if (parser.getAttributeName(i).equals("package")) {
+                        packageName = parser.getAttributeValue(i);
+                    }
+                }
+            } else if (parser.getName().equals("application")) {
+                int size = parser.getAttributeCount();
+                for (int i = 0; i < size; ++i) {
+                    if (parser.getAttributeNameResource(i) == 0x01010003) {
+                        customApplication = true;
+                        customApplicationName = parser.getAttributeValue(i);
+                        int index = axml.mTableStrings.getSize();
+                        byte[] data = axml.getData();
+                        int off = parser.currentAttributeStart + 20 * i;
+                        off += 8;
+                        writeInt(data, off, index);
+                        off += 8;
+                        writeInt(data, off, index);
+                    }
+                }
+                if (!customApplication) {
+                    int off = parser.currentAttributeStart;
+                    byte[] data = axml.getData();
+                    byte[] newData = new byte[data.length + 20];
+                    System.arraycopy(data, 0, newData, 0, off);
+                    System.arraycopy(data, off, newData, off + 20, data.length - off);
+
+                    // chunkSize
+                    int chunkSize = readInt(newData, off - 32);
+                    writeInt(newData, off - 32, chunkSize + 20);
+                    // attributeCount
+                    writeInt(newData, off - 8, size + 1);
+
+                    int idIndex = parser.findResourceID(0x01010003);
+                    if (idIndex == -1)
+                        throw new IOException("idIndex == -1");
+
+                    boolean isMax = true;
+                    for (int i = 0; i < size; ++i) {
+                        int id = parser.getAttributeNameResource(i);
+                        if (id > 0x01010003) {
+                            isMax = false;
+                            if (i != 0) {
+                                System.arraycopy(newData, off + 20, newData, off, 20 * i);
+                                off += 20 * i;
+                            }
+                            break;
+                        }
+                    }
+                    if (isMax) {
+                        System.arraycopy(newData, off + 20, newData, off, 20 * size);
+                        off += 20 * size;
+                    }
+
+                    writeInt(newData, off, axml.mTableStrings.find("http://schemas.android.com/apk/res/android"));
+                    writeInt(newData, off + 4, idIndex);
+                    writeInt(newData, off + 8, axml.mTableStrings.getSize());
+                    writeInt(newData, off + 12, 0x03000008);
+                    writeInt(newData, off + 16, axml.mTableStrings.getSize());
+                    axml.setData(newData);
+                }
+                success = true;
+                break;
+            }
+        }
+        if (!success)
+            throw new IOException();
+        ArrayList<String> list = new ArrayList<>(axml.mTableStrings.getSize());
+        axml.mTableStrings.getStrings(list);
+        list.add("com.apksignaturekiller.HookApplication");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        axml.write(list, baos);
+        return baos.toByteArray();
+    }
+
+    private void writeInt(byte @NotNull [] bArr, int i, int i2) {
+        int i3 = i + 1;
+        bArr[i] = (byte) (i2 & 255);
+        int i4 = i3 + 1;
+        bArr[i3] = (byte) ((i2 >>> 8) & 255);
+        bArr[i4] = (byte) ((i2 >>> 16) & 255);
+        bArr[i4 + 1] = (byte) ((i2 >>> 24) & 255);
+    }
+
+    @Contract(pure = true)
+    private int readInt(byte @NotNull [] bArr, int i) {
+        return (bArr[i + 3] << Ascii.CAN) | ((bArr[i + 2] & UnsignedBytes.MAX_VALUE) << 16) | ((bArr[i + 1] & UnsignedBytes.MAX_VALUE) << 8) | (bArr[i] & UnsignedBytes.MAX_VALUE);
+    }
+}
