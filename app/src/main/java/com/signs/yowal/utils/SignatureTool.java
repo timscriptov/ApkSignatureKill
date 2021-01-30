@@ -180,11 +180,11 @@ public class SignatureTool {
                     customApplicationName = packageName + customApplicationName;
                 }
                 customApplicationName = "L" + customApplicationName.replace('.', '/') + ";";
-                src = src.replace("Landroid/app/Application;", customApplicationName);
+                src = src.replace("### Applicaton Data ###", customApplicationName);
             }
             if (signatures == null)
                 throw new NullPointerException("Signatures is null");
-            src = src.replace("### Applicaton Data ###", signatures);
+            src = src.replace("### Signatures Data ###", signatures);
             ClassDef classDef = Smali.assembleSmaliFile(src, dexBuilder, new SmaliOptions());
             if (classDef == null)
                 throw new Exception("Parse smali failed");
