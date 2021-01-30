@@ -140,19 +140,15 @@ public class MainActivity extends AppCompatActivity {
                 String srcApk = apkPath.getText().toString();
                 String outApk = apkPath.getText().toString().replace(".apk", "_kill.apk");
 
-                if (srcApk == null || outApk == null) {
-                    Toast.makeText(mContext, "Убедитесь, что все необходимые параметры выбраны", Toast.LENGTH_SHORT).show();
-                } else {
-                    new File(outApk).delete();
-                    try {
-                        SignatureTool signatureTool = new SignatureTool(mContext);
-                        signatureTool.setPath(srcApk, outApk);
-                        signatureTool.Kill();
-                        toast("Обработка завершена, подпишите самостоятельно");
-                        dialogFinished();
-                    } catch (Exception e) {
-                        toast("Обработка не удалась:" + e.toString());
-                    }
+                new File(outApk);
+                try {
+                    SignatureTool signatureTool = new SignatureTool(mContext);
+                    signatureTool.setPath(srcApk, outApk);
+                    signatureTool.Kill();
+                    toast("Обработка завершена, подпишите самостоятельно" + outApk);
+                    dialogFinished();
+                } catch (Exception e) {
+                    toast("Обработка не удалась:" + e.toString());
                 }
                 mHandler.sendEmptyMessage(0);
                 Looper.loop();

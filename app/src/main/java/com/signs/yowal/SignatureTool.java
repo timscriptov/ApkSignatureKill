@@ -3,9 +3,8 @@ package com.signs.yowal;
 import android.content.Context;
 import android.util.Base64;
 
-import com.google.common.base.Ascii;
 import com.google.common.collect.Lists;
-import com.google.common.primitives.UnsignedBytes;
+import com.tianyu.killer.R;
 
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Contract;
@@ -19,6 +18,7 @@ import org.jf.dexlib2.analysis.DexClassProvider;
 import org.jf.dexlib2.dexbacked.DexBackedClassDef;
 import org.jf.dexlib2.dexbacked.DexBackedDexFile;
 import org.jf.dexlib2.dexbacked.raw.ItemType;
+import org.jf.dexlib2.iface.ClassDef;
 import org.jf.dexlib2.writer.builder.DexBuilder;
 import org.jf.dexlib2.writer.io.MemoryDataStore;
 import org.jf.smali.Smali;
@@ -31,9 +31,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +45,7 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import bin.util.StreamUtil;
 import bin.xml.decode.AXmlDecoder;
 import bin.xml.decode.AXmlResourceParser;
 import bin.xml.decode.XmlPullParser;
@@ -68,13 +73,13 @@ public class SignatureTool {
         tempApk = new File(srcApk).getParentFile().toString() + "/.temp";
     }
 
-    public void Kill() throws Exception {
+    public void Kill() {
         new File(outApk).delete();
         System.out.println("Чтение подписи:" + srcApk);
         signatures = getApkSignInfo(srcApk);
         System.out.println("Чтение APK:" + srcApk);
-        ZipFile zipFile = new ZipFile(srcApk);
         try {
+            ZipFile zipFile = new ZipFile(srcApk);
             System.out.println("  -- Обработка AndroidManifest.xml");
             byte[] parseManifest = parseManifest(zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml")));
             DexBackedDexFile fromInputStream = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(zipFile.getEntry("classes.dex"))));
@@ -95,7 +100,6 @@ public class SignatureTool {
             System.out.println("\nЗапись в APK:" + outApk);
             try {
                 ZipOutputStream zipFileOut = new ZipOutputStream(new File(outApk));
-
                 zipFileOut.putNextEntry("AndroidManifest.xml");
                 zipFileOut.write(parseManifest);
                 zipFileOut.closeEntry();
@@ -118,15 +122,17 @@ public class SignatureTool {
                 }
                 new File(tempApk).delete();
                 zipFile.close();
-            } finally {
-                zipFile.close();
+                zipFileOut.close();
+            } catch (Throwable th) {
+                th.printStackTrace();
             }
-        } finally {
-            zipFile.close();
+        } catch (Throwable th2) {
+            th2.printStackTrace();
         }
     }
 
-    private Certificate @Nullable [] loadCertificates(JarFile jarFile, JarEntry jarEntry, byte[] bArr) {
+    private Certificate @Nullable [] loadCertificates(JarFile jarFile, JarEntry jarEntry,
+                                                      byte[] bArr) {
         try {
             InputStream inputStream = jarFile.getInputStream(jarEntry);
             while (inputStream.read(bArr, 0, bArr.length) != -1) {
@@ -163,38 +169,32 @@ public class SignatureTool {
         }
     }
 
-    private byte @NotNull [] processDex(DexBackedDexFile dexBackedDexFile) throws Exception {
-        ZipFile zipFile = new ZipFile(mContext.getApplicationInfo().publicSourceDir);
-        ZipEntry entry = zipFile.getEntry("classes.dex");
+    private byte @NotNull [] processDex(DexBackedDexFile dex) throws Exception {
         DexBuilder dexBuilder = new DexBuilder(Opcodes.getDefault());
-        DexBackedDexFile fromInputStream = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(entry)));
-        StringWriter stringWriter = new StringWriter();
-        IndentingWriter indentingWriter = new IndentingWriter(stringWriter);
-        new ClassDefinition(new BaksmaliOptions(), new ClassPath(Lists.newArrayList(new DexClassProvider(fromInputStream)), false, fromInputStream.getClasses().size()).getClassDef("Lcom/apksignaturekiller/HookApplication;")).writeTo(indentingWriter);
-        indentingWriter.close();
-        String writer = stringWriter.toString();
-        if (customApplication) {
-            if (customApplicationName.startsWith(".")) {
-                if (packageName == null) {
-                    throw new NullPointerException("Package name is null.");
+        try (InputStream fis = mContext.getResources().openRawResource(R.raw.hook)) {
+            String src = new String(StreamUtil.readBytes(fis), StandardCharsets.UTF_8);
+            if (customApplication) {
+                if (customApplicationName.startsWith(".")) {
+                    if (packageName == null)
+                        throw new NullPointerException("Package name is null.");
+                    customApplicationName = packageName + customApplicationName;
                 }
-                customApplicationName = packageName + customApplicationName;
+                customApplicationName = "L" + customApplicationName.replace('.', '/') + ";";
+                src = src.replace("Landroid/app/Application;", customApplicationName);
             }
-            writer = writer.replace("### Applicaton Data ###", customApplicationName);
-        }
-        if (signatures == null) {
-            throw new NullPointerException("Signatures is null");
-        } else if (Smali.assembleSmaliFile(writer.replace("### Signatures Data ###", signatures), dexBuilder, new SmaliOptions()) == null) {
-            throw new Exception("Parse smali failed");
-        } else {
-            for (DexBackedClassDef dexBackedClassDef : dexBackedDexFile.getClasses()) {
+            if (signatures == null)
+                throw new NullPointerException("Signatures is null");
+            src = src.replace("### Applicaton Data ###", signatures);
+            ClassDef classDef = Smali.assembleSmaliFile(src, dexBuilder, new SmaliOptions());
+            if (classDef == null)
+                throw new Exception("Parse smali failed");
+            for (DexBackedClassDef dexBackedClassDef : dex.getClasses()) {
                 dexBuilder.internClassDef(dexBackedClassDef);
             }
-            MemoryDataStore memoryDataStore = new MemoryDataStore();
-            dexBuilder.writeTo(memoryDataStore);
-            zipFile.close();
-            return Arrays.copyOf(memoryDataStore.getBufferData(), memoryDataStore.getSize());
         }
+        MemoryDataStore store = new MemoryDataStore();
+        dexBuilder.writeTo(store);
+        return Arrays.copyOf(store.getBufferData(), store.getSize());
     }
 
     private byte @NotNull [] parseManifest(InputStream is) throws IOException {
@@ -284,17 +284,16 @@ public class SignatureTool {
         return baos.toByteArray();
     }
 
-    private void writeInt(byte @NotNull [] bArr, int i, int i2) {
-        int i3 = i + 1;
-        bArr[i] = (byte) (i2 & 255);
-        int i4 = i3 + 1;
-        bArr[i3] = (byte) ((i2 >>> 8) & 255);
-        bArr[i4] = (byte) ((i2 >>> 16) & 255);
-        bArr[i4 + 1] = (byte) ((i2 >>> 24) & 255);
+    private static void writeInt(byte @NotNull [] data, int off, int value) {
+        data[off++] = (byte) (value & 0xFF);
+        data[off++] = (byte) ((value >>> 8) & 0xFF);
+        data[off++] = (byte) ((value >>> 16) & 0xFF);
+        data[off] = (byte) ((value >>> 24) & 0xFF);
     }
 
     @Contract(pure = true)
-    private int readInt(byte @NotNull [] bArr, int i) {
-        return (bArr[i + 3] << Ascii.CAN) | ((bArr[i + 2] & UnsignedBytes.MAX_VALUE) << 16) | ((bArr[i + 1] & UnsignedBytes.MAX_VALUE) << 8) | (bArr[i] & UnsignedBytes.MAX_VALUE);
+    private static int readInt(byte @NotNull [] data, int off) {
+        return data[off + 3] << 24 | (data[off + 2] & 0xFF) << 16 | (data[off + 1] & 0xFF) << 8
+                | data[off] & 0xFF;
     }
 }
