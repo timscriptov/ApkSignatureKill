@@ -32,16 +32,14 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 
 public class HomeFragment extends Fragment {
-    private View mView;
     public static AppCompatEditText apkPath;
     private AppCompatImageView apkIcon;
     private AppCompatTextView apkName;
     private AppCompatTextView apkPack;
-    public static AlertDialog alertDialog;
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.activity_main, container, false);
+        View mView = inflater.inflate(R.layout.activity_main, container, false);
 
         apkIcon = mView.findViewById(R.id.apkIcon);
         apkName = mView.findViewById(R.id.apkName);
@@ -110,10 +108,15 @@ public class HomeFragment extends Fragment {
     }
 
     public void hookRun() {
-        final ProgressDialog myProgressDialog = ProgressDialog.show(getContext(), "Обработка...", "Подождите...", true);
-        final Handler mHandler = new Handler() {
-            public void handleMessage(Message message) {
-                myProgressDialog.dismiss();
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle("Обработка...");
+        progressDialog.setMessage("Подождите...");
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+
+        Handler mHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                progressDialog.dismiss();
             }
         };
 
@@ -144,12 +147,11 @@ public class HomeFragment extends Fragment {
     }
 
     public void dialogFinished() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Обработка завершена");
-        builder.setMessage("Файл был сохранен в каталоге, подпишите его");
-        builder.setCancelable(true);
-        builder.setPositiveButton("Ок", null);
-        AlertDialog show = builder.show();
-        show.getButton(-1).setOnClickListener(view -> alertDialog.dismiss());
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+        alertDialog.setTitle("Обработка завершена");
+        alertDialog.setMessage("Файл был сохранен в каталоге, подпишите его");
+        alertDialog.setCancelable(true);
+        alertDialog.setPositiveButton("Ок", null);
+        alertDialog.show();
     }
 }
