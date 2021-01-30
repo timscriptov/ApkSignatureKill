@@ -1,4 +1,4 @@
-package com.signs.yowal;
+package com.signs.yowal.utils;
 
 import android.content.Context;
 import android.util.Base64;

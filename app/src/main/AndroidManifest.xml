@@ -19,12 +19,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SignatureKill">
-        <activity android:label="@string/app_name" android:name="com.signs.yowal.MainActivity">
+        <activity android:label="@string/app_name" android:name="com.signs.yowal.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <activity
+            android:label="Application Error"
+            android:theme="@style/Theme.SignatureKill"
+            android:name="com.signs.yowal.activities.ExceptionActivity" />
+
         <meta-data android:name="android.max_aspect" android:value="4"/>
 
     </application>

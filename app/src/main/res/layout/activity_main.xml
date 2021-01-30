@@ -79,7 +79,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <androidx.appcompat.widget.AppCompatImageButton
-            android:onClick="ChoiceFile"
+            android:id="@+id/browseApk"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:background="@drawable/browseapk"
@@ -87,13 +87,21 @@
 
     </LinearLayout>
 
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/superSignatureKill"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Super Signature Kill" />
+
     <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/hookRun"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="8dp"
         android:layout_marginRight="10dp"
-        android:onClick="HookFile"
         android:text="Hook" />
 
     <androidx.appcompat.widget.AppCompatTextView

@@ -1,69 +1,52 @@
-package com.signs.yowal;
+package com.signs.yowal.fragments;
 
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.fragment.app.Fragment;
 
 import com.developer.filepicker.model.DialogConfigs;
 import com.developer.filepicker.model.DialogProperties;
 import com.developer.filepicker.view.FilePickerDialog;
-import com.signs.yowal.ui.Dialogs;
+import com.signs.yowal.utils.SignatureTool;
 import com.signs.yowal.utils.MyAppInfo;
 import com.signs.yowal.utils.Preferences;
 import com.tianyu.killer.R;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity {
+public class HomeFragment extends Fragment {
+    private View mView;
     public static AppCompatEditText apkPath;
-    @SuppressLint("StaticFieldLeak")
-    public static Context mContext;
-    public static AlertDialog alertDialog;
     private AppCompatImageView apkIcon;
     private AppCompatTextView apkName;
     private AppCompatTextView apkPack;
-
-    public static void toast(String str) {
-        Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
-    }
-
-    public static void dialogFinished() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle("Обработка завершена");
-        builder.setMessage("Файл был сохранен в каталоге, подпишите его");
-        builder.setCancelable(true);
-        builder.setPositiveButton("Ок", null);
-        AlertDialog show = builder.show();
-        show.getButton(-1).setOnClickListener(view -> alertDialog.dismiss());
-    }
+    public static AlertDialog alertDialog;
 
     @Override
-    public void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
-        setContentView(R.layout.activity_main);
-        mContext = this;
-        apkIcon = findViewById(R.id.apkIcon);
-        apkName = findViewById(R.id.apkName);
-        apkPack = findViewById(R.id.apkPackage);
-        apkPath = findViewById(R.id.apkPath);
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mView = inflater.inflate(R.layout.activity_main, container, false);
+
+        apkIcon = mView.findViewById(R.id.apkIcon);
+        apkName = mView.findViewById(R.id.apkName);
+        apkPack = mView.findViewById(R.id.apkPackage);
+        apkPath = mView.findViewById(R.id.apkPath);
 
         apkPath.setText(Preferences.isApkPath());
         apkPath.addTextChangedListener(new TextWatcher() {
@@ -80,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!p1.toString().isEmpty()) {
                     File apk = new File(p1.toString());
                     if (apk.exists()) {
-                        apkIcon.setImageDrawable(new MyAppInfo(MainActivity.this, apk.getAbsolutePath()).getIcon());
+                        apkIcon.setImageDrawable(new MyAppInfo(getContext(), apk.getAbsolutePath()).getIcon());
                         apkName.setText(MyAppInfo.getAppName());
                         apkPack.setText(MyAppInfo.getPackage());
                     } else {
@@ -92,18 +75,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Settings.ACTION_MANAGE_OVERLAY_PERMISSION) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Settings.ACTION_MANAGE_OVERLAY_PERMISSION}, 1);
-            }
-        }
+        (mView.findViewById(R.id.browseApk)).setOnClickListener(p1 -> {
+            browseApk();
+        });
 
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q && !Environment.isExternalStorageManager()) {
-            Dialogs.showScopedStorageDialog(this);
-        }
+        (mView.findViewById(R.id.hookRun)).setOnClickListener(p1 -> {
+            hookRun();
+        });
+
+        return mView;
     }
 
-    public void ChoiceFile(View view) {
+    public void browseApk() {
         DialogProperties properties = new DialogProperties();
         properties.selection_mode = DialogConfigs.SINGLE_MODE;
         properties.selection_type = DialogConfigs.FILE_SELECT;
@@ -111,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         properties.error_dir = new File(DialogConfigs.DEFAULT_DIR);
         properties.offset = new File(DialogConfigs.DEFAULT_DIR);
         properties.extensions = new String[]{"apk", "APK"};
-        FilePickerDialog dialog = new FilePickerDialog(this, properties);
+        FilePickerDialog dialog = new FilePickerDialog(getContext(), properties);
         dialog.setTitle("Выберите установочный пакет");
         dialog.setDialogSelectionListener(files -> {
             for (String path : files) {
@@ -126,8 +109,8 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void HookFile(View view) {
-        final ProgressDialog myProgressDialog = ProgressDialog.show(this, "Обработка...", "Подождите...", true);
+    public void hookRun() {
+        final ProgressDialog myProgressDialog = ProgressDialog.show(getContext(), "Обработка...", "Подождите...", true);
         final Handler mHandler = new Handler() {
             public void handleMessage(Message message) {
                 myProgressDialog.dismiss();
@@ -142,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
                 new File(outApk);
                 try {
-                    SignatureTool signatureTool = new SignatureTool(mContext);
+                    SignatureTool signatureTool = new SignatureTool(getContext());
                     signatureTool.setPath(srcApk, outApk);
                     signatureTool.Kill();
                     toast("Обработка завершена, подпишите самостоятельно" + outApk);
@@ -154,5 +137,19 @@ public class MainActivity extends AppCompatActivity {
                 Looper.loop();
             }
         }.start();
+    }
+
+    public void toast(String str) {
+        Toast.makeText(getContext(), str, Toast.LENGTH_SHORT).show();
+    }
+
+    public void dialogFinished() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Обработка завершена");
+        builder.setMessage("Файл был сохранен в каталоге, подпишите его");
+        builder.setCancelable(true);
+        builder.setPositiveButton("Ок", null);
+        AlertDialog show = builder.show();
+        show.getButton(-1).setOnClickListener(view -> alertDialog.dismiss());
     }
 }
