@@ -175,11 +175,11 @@ public class SignatureTool {
             String src = new String(StreamUtil.readBytes(fis), StandardCharsets.UTF_8);
             if (customApplication) {
                 if (customApplicationName.startsWith(".")) {
-                    if (packageName == null)
+                    if (packageName == null) {
                         throw new NullPointerException("Package name is null.");
+                    }
                     customApplicationName = packageName + customApplicationName;
                 }
-                customApplicationName = "L" + customApplicationName.replace('.', '/') + ";";
                 src = src.replace("### Applicaton Data ###", customApplicationName);
             }
             if (signatures == null)

@@ -187,11 +187,11 @@ public class HookApplication extends Application implements InvocationHandler {
     public void attachBaseContext(Context context) {
         HookSign(context);
         try {
-            this.realApplication = (Application) Class.forName("### Applicaton Data ###").getConstructor(new Class[0]).newInstance(new Object[0]);
+            realApplication = (Application) Class.forName("### Applicaton Data ###").getConstructor(new Class[0]).newInstance(new Object[0]);
             ReplaceApp(context);
             super.attachBaseContext(context);
-            if (this.realApplication != null) {
-                issieiej(context, this.realApplication);
+            if (realApplication != null) {
+                issieiej(context, realApplication);
             }
         } catch (Throwable th) {
             th.printStackTrace();
@@ -202,16 +202,16 @@ public class HookApplication extends Application implements InvocationHandler {
     public Object invoke(Object obj, @NotNull Method method, Object[] objArr) throws Throwable {
         if ("getPackageInfo".equals(method.getName())) {
             String str = (String) objArr[0];
-            if (((Integer) objArr[1] & this.GET_SIGNATURES) != 0 && this.appPkgName.equals(str)) {
-                PackageInfo packageInfo = (PackageInfo) method.invoke(this.base, objArr);
-                packageInfo.signatures = new Signature[this.sign.length];
+            if (((Integer) objArr[1] & GET_SIGNATURES) != 0 && appPkgName.equals(str)) {
+                PackageInfo packageInfo = (PackageInfo) method.invoke(base, objArr);
+                packageInfo.signatures = new Signature[sign.length];
                 for (int i = 0; i < packageInfo.signatures.length; i++) {
-                    packageInfo.signatures[i] = new Signature(this.sign[i]);
+                    packageInfo.signatures[i] = new Signature(sign[i]);
                 }
                 return packageInfo;
             }
         }
-        return method.invoke(this.base, objArr);
+        return method.invoke(base, objArr);
     }
 
     public void issieiej(Context context, Application application) {
