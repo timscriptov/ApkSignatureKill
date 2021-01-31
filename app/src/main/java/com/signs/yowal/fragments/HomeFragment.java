@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
@@ -22,9 +23,10 @@ import androidx.fragment.app.Fragment;
 import com.developer.filepicker.model.DialogConfigs;
 import com.developer.filepicker.model.DialogProperties;
 import com.developer.filepicker.view.FilePickerDialog;
-import com.signs.yowal.utils.SignatureTool;
+import com.signs.yowal.utils.BinSignatureTool;
 import com.signs.yowal.utils.MyAppInfo;
 import com.signs.yowal.utils.Preferences;
+import com.signs.yowal.utils.SignatureTool;
 import com.tianyu.killer.R;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +38,7 @@ public class HomeFragment extends Fragment {
     private AppCompatImageView apkIcon;
     private AppCompatTextView apkName;
     private AppCompatTextView apkPack;
+    private AppCompatCheckBox binSignatureTool;
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -71,6 +74,12 @@ public class HomeFragment extends Fragment {
                     }
                 }
             }
+        });
+
+        binSignatureTool = mView.findViewById(R.id.binMtSignatureKill);
+        binSignatureTool.setChecked(Preferences.getBinMtSignatureKill());
+        binSignatureTool.setOnCheckedChangeListener((p1, p2) -> {
+            Preferences.setBinMtSignatureKill(p2);
         });
 
         (mView.findViewById(R.id.browseApk)).setOnClickListener(p1 -> {
@@ -128,9 +137,15 @@ public class HomeFragment extends Fragment {
 
                 new File(outApk);
                 try {
-                    SignatureTool signatureTool = new SignatureTool(getContext());
-                    signatureTool.setPath(srcApk, outApk);
-                    signatureTool.Kill();
+                    if (Preferences.getBinMtSignatureKill()) {
+                        BinSignatureTool binSignatureTool = new BinSignatureTool(getContext());
+                        binSignatureTool.setPath(srcApk, outApk);
+                        binSignatureTool.Kill();
+                    } else {
+                        SignatureTool signatureTool = new SignatureTool(getContext());
+                        signatureTool.setPath(srcApk, outApk);
+                        signatureTool.Kill();
+                    }
                     toast("Обработка завершена, подпишите самостоятельно" + outApk);
                     dialogFinished();
                 } catch (Exception e) {

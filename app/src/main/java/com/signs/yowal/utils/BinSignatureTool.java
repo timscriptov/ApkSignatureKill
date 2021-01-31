@@ -3,18 +3,12 @@ package com.signs.yowal.utils;
 import android.content.Context;
 import android.util.Base64;
 
-import com.google.common.collect.Lists;
 import com.tianyu.killer.R;
 
 import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jf.baksmali.Adaptors.ClassDefinition;
-import org.jf.baksmali.BaksmaliOptions;
 import org.jf.dexlib2.Opcodes;
-import org.jf.dexlib2.analysis.ClassPath;
-import org.jf.dexlib2.analysis.DexClassProvider;
 import org.jf.dexlib2.dexbacked.DexBackedClassDef;
 import org.jf.dexlib2.dexbacked.DexBackedDexFile;
 import org.jf.dexlib2.dexbacked.raw.ItemType;
@@ -23,20 +17,14 @@ import org.jf.dexlib2.writer.builder.DexBuilder;
 import org.jf.dexlib2.writer.io.MemoryDataStore;
 import org.jf.smali.Smali;
 import org.jf.smali.SmaliOptions;
-import org.jf.util.IndentingWriter;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -53,7 +41,7 @@ import bin.zip.ZipEntry;
 import bin.zip.ZipFile;
 import bin.zip.ZipOutputStream;
 
-public class SignatureTool {
+public class BinSignatureTool {
     private boolean customApplication = false;
     private String customApplicationName;
     private Context mContext;
@@ -63,7 +51,7 @@ public class SignatureTool {
     private String srcApk;
     private String tempApk;
 
-    public SignatureTool(Context context) {
+    public BinSignatureTool(Context context) {
         mContext = context;
     }
 
@@ -99,30 +87,26 @@ public class SignatureTool {
             zipOutputStream.close();
             System.out.println("\nЗапись в APK:" + outApk);
             try {
-                ZipOutputStream zipFileOut = new ZipOutputStream(new File(outApk));
-                zipFileOut.putNextEntry("AndroidManifest.xml");
-                zipFileOut.write(parseManifest);
-                zipFileOut.closeEntry();
-                zipFileOut.putNextEntry("classes.dex");
-                zipFileOut.write(processDex);
-                zipFileOut.closeEntry();
-                FileInputStream fileInputStream = new FileInputStream(tempApk);
-                byte[] bArr = new byte[fileInputStream.available()];
-                fileInputStream.read(bArr);
-                zipFileOut.putNextEntry("assets/hook.apk");
-                zipFileOut.write(bArr);
-                zipFileOut.closeEntry();
-                fileInputStream.close();
-                Enumeration<ZipEntry> entries2 = zipFile.getEntries();
-                while (entries2.hasMoreElements()) {
-                    ZipEntry nextElement2 = entries2.nextElement();
-                    if (!nextElement2.getName().equals("AndroidManifest.xml") && !nextElement2.getName().equals("classes.dex")) {
-                        zipFileOut.copyZipEntry(nextElement2, zipFile);
-                    }
+                ZipOutputStream zos = new ZipOutputStream(new File(outApk));
+                zos.putNextEntry("AndroidManifest.xml");
+                zos.write(parseManifest);
+                zos.closeEntry();
+                zos.putNextEntry("classes.dex");
+                zos.write(processDex);
+                zos.closeEntry();
+
+                Enumeration<ZipEntry> enumeration = zipFile.getEntries();
+                while (enumeration.hasMoreElements()) {
+                    ZipEntry ze = enumeration.nextElement();
+                    if (ze.getName().equals("AndroidManifest.xml")
+                            || ze.getName().equals("classes.dex")
+                            || ze.getName().startsWith("META-INF/"))
+                        continue;
+                    zos.copyZipEntry(ze, zipFile);
                 }
                 new File(tempApk).delete();
                 zipFile.close();
-                zipFileOut.close();
+                zos.close();
             } catch (Throwable th) {
                 th.printStackTrace();
             }
@@ -171,16 +155,16 @@ public class SignatureTool {
 
     private byte @NotNull [] processDex(DexBackedDexFile dex) throws Exception {
         DexBuilder dexBuilder = new DexBuilder(Opcodes.getDefault());
-        try (InputStream fis = mContext.getResources().openRawResource(R.raw.hook)) {
+        try (InputStream fis = mContext.getResources().openRawResource(R.raw.binhook)) {
             String src = new String(StreamUtil.readBytes(fis), StandardCharsets.UTF_8);
             if (customApplication) {
                 if (customApplicationName.startsWith(".")) {
-                    if (packageName == null) {
+                    if (packageName == null)
                         throw new NullPointerException("Package name is null.");
-                    }
                     customApplicationName = packageName + customApplicationName;
                 }
-                src = src.replace("### Applicaton Data ###", customApplicationName);
+                customApplicationName = "L" + customApplicationName.replace('.', '/') + ";";
+                src = src.replace("Landroid/app/Application;", customApplicationName);
             }
             if (signatures == null)
                 throw new NullPointerException("Signatures is null");
@@ -278,7 +262,7 @@ public class SignatureTool {
             throw new IOException();
         ArrayList<String> list = new ArrayList<>(axml.mTableStrings.getSize());
         axml.mTableStrings.getStrings(list);
-        list.add("com.apksignaturekiller.HookApplication");
+        list.add("cc.binmt.signature.PmsHookApplication");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         axml.write(list, baos);
         return baos.toByteArray();
