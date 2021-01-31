@@ -78,13 +78,16 @@ public class SignatureTool {
         System.out.println("Чтение подписи:" + srcApk);
         signatures = getApkSignInfo(srcApk);
         System.out.println("Чтение APK:" + srcApk);
-        try {
-            ZipFile zipFile = new ZipFile(srcApk);
+        try (ZipFile zipFile = new ZipFile(srcApk)) {
             System.out.println("  -- Обработка AndroidManifest.xml");
-            byte[] parseManifest = parseManifest(zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml")));
-            DexBackedDexFile fromInputStream = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(zipFile.getEntry("classes.dex"))));
+            ZipEntry manifestEntry = zipFile.getEntry("AndroidManifest.xml");
+            byte[] manifestData  = parseManifest(zipFile.getInputStream(manifestEntry));
+
+            ZipEntry dexEntry = zipFile.getEntry("classes.dex");
+            DexBackedDexFile dex  = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(dexEntry)));
             System.out.println("  -- Обработка classes.dex");
-            byte[] processDex = processDex(fromInputStream);
+            byte[] processDex = processDex(dex);
+
             System.out.println("\nОптимизация APK:" + outApk);
             ZipOutputStream zipOutputStream = new ZipOutputStream(new File(tempApk));
             zipOutputStream.setLevel(1);
@@ -98,31 +101,30 @@ public class SignatureTool {
             }
             zipOutputStream.close();
             System.out.println("\nЗапись в APK:" + outApk);
-            try {
-                ZipOutputStream zipFileOut = new ZipOutputStream(new File(outApk));
-                zipFileOut.putNextEntry("AndroidManifest.xml");
-                zipFileOut.write(parseManifest);
-                zipFileOut.closeEntry();
-                zipFileOut.putNextEntry("classes.dex");
-                zipFileOut.write(processDex);
-                zipFileOut.closeEntry();
+            try (ZipOutputStream zos = new ZipOutputStream(new File(outApk))){
+                zos.putNextEntry("AndroidManifest.xml");
+                zos.write(manifestData);
+                zos.closeEntry();
+                zos.putNextEntry("classes.dex");
+                zos.write(processDex);
+                zos.closeEntry();
+
                 FileInputStream fileInputStream = new FileInputStream(tempApk);
                 byte[] bArr = new byte[fileInputStream.available()];
                 fileInputStream.read(bArr);
-                zipFileOut.putNextEntry("assets/hook.apk");
-                zipFileOut.write(bArr);
-                zipFileOut.closeEntry();
+                zos.putNextEntry("assets/hook.apk");
+                zos.write(bArr);
+                zos.closeEntry();
                 fileInputStream.close();
                 Enumeration<ZipEntry> entries2 = zipFile.getEntries();
                 while (entries2.hasMoreElements()) {
                     ZipEntry nextElement2 = entries2.nextElement();
                     if (!nextElement2.getName().equals("AndroidManifest.xml") && !nextElement2.getName().equals("classes.dex")) {
-                        zipFileOut.copyZipEntry(nextElement2, zipFile);
+                        zos.copyZipEntry(nextElement2, zipFile);
                     }
                 }
                 new File(tempApk).delete();
                 zipFile.close();
-                zipFileOut.close();
             } catch (Throwable th) {
                 th.printStackTrace();
             }

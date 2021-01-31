@@ -66,30 +66,33 @@ public class BinSignatureTool {
         System.out.println("Чтение подписи:" + srcApk);
         signatures = getApkSignInfo(srcApk);
         System.out.println("Чтение APK:" + srcApk);
-        try {
-            ZipFile zipFile = new ZipFile(srcApk);
+        try (ZipFile zipFile = new ZipFile(srcApk);) {
             System.out.println("  -- Обработка AndroidManifest.xml");
-            byte[] parseManifest = parseManifest(zipFile.getInputStream(zipFile.getEntry("AndroidManifest.xml")));
-            DexBackedDexFile fromInputStream = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(zipFile.getEntry("classes.dex"))));
+            ZipEntry manifestEntry = zipFile.getEntry("AndroidManifest.xml");
+            byte[] manifestData  = parseManifest(zipFile.getInputStream(manifestEntry));
+
+            ZipEntry dexEntry = zipFile.getEntry("classes.dex");
+            DexBackedDexFile dex  = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(dexEntry)));
             System.out.println("  -- Обработка classes.dex");
-            byte[] processDex = processDex(fromInputStream);
+            byte[] processDex = processDex(dex);
+
             System.out.println("\nОптимизация APK:" + outApk);
             ZipOutputStream zipOutputStream = new ZipOutputStream(new File(tempApk));
             zipOutputStream.setLevel(1);
             Enumeration<ZipEntry> entries = zipFile.getEntries();
             while (entries.hasMoreElements()) {
-                ZipEntry nextElement = entries.nextElement();
-                String name = nextElement.getName();
+                ZipEntry ze = entries.nextElement();
+                String name = ze.getName();
                 if ((name.startsWith("classes") && name.endsWith("dex")) || name.startsWith("./")) {
-                    zipOutputStream.copyZipEntry(nextElement, zipFile);
+                    zipOutputStream.copyZipEntry(ze, zipFile);
                 }
             }
             zipOutputStream.close();
+
             System.out.println("\nЗапись в APK:" + outApk);
-            try {
-                ZipOutputStream zos = new ZipOutputStream(new File(outApk));
+            try (ZipOutputStream zos = new ZipOutputStream(new File(outApk))) {
                 zos.putNextEntry("AndroidManifest.xml");
-                zos.write(parseManifest);
+                zos.write(manifestData );
                 zos.closeEntry();
                 zos.putNextEntry("classes.dex");
                 zos.write(processDex);
@@ -106,7 +109,6 @@ public class BinSignatureTool {
                 }
                 new File(tempApk).delete();
                 zipFile.close();
-                zos.close();
             } catch (Throwable th) {
                 th.printStackTrace();
             }
