@@ -173,7 +173,7 @@ public class SignatureTool {
 
     private byte @NotNull [] processDex(DexBackedDexFile dex) throws Exception {
         DexBuilder dexBuilder = new DexBuilder(Opcodes.getDefault());
-        try (InputStream fis = mContext.getResources().openRawResource(R.raw.hook)) {
+        try (InputStream fis = mContext.getResources().openRawResource(R.raw.heavenly_hook)) {
             String src = new String(StreamUtil.readBytes(fis), StandardCharsets.UTF_8);
             if (customApplication) {
                 if (customApplicationName.startsWith(".")) {

@@ -41,7 +41,7 @@ import bin.zip.ZipEntry;
 import bin.zip.ZipFile;
 import bin.zip.ZipOutputStream;
 
-public class BinSignatureTool {
+public class BinPlusSignatureTool {
     private boolean customApplication = false;
     private String customApplicationName;
     private Context mContext;
@@ -51,7 +51,7 @@ public class BinSignatureTool {
     private String srcApk;
     private String tempApk;
 
-    public BinSignatureTool(Context context) {
+    public BinPlusSignatureTool(Context context) {
         mContext = context;
     }
 
@@ -76,6 +76,18 @@ public class BinSignatureTool {
             System.out.println("  -- Обработка classes.dex");
             byte[] processDex = processDex(dex);
 
+            InputStream fis_arm = mContext.getResources().openRawResource(R.raw.mt2_hook_arm);
+            byte[] arm = StreamUtil.readBytes(fis_arm);
+
+            InputStream fis_arm64 = mContext.getResources().openRawResource(R.raw.mt2_hook_arm64);
+            byte[] arm64 = StreamUtil.readBytes(fis_arm64);
+
+            InputStream fis_x86 = mContext.getResources().openRawResource(R.raw.mt2_hook_x86);
+            byte[] x86 = StreamUtil.readBytes(fis_x86);
+
+            InputStream fis_x86_64 = mContext.getResources().openRawResource(R.raw.mt2_hook_x86_64);
+            byte[] x86_64 = StreamUtil.readBytes(fis_x86_64);
+
             System.out.println("\nОптимизация APK:" + outApk);
             ZipOutputStream zipOutputStream = new ZipOutputStream(new File(tempApk));
             zipOutputStream.setLevel(1);
@@ -92,10 +104,27 @@ public class BinSignatureTool {
             System.out.println("\nЗапись в APK:" + outApk);
             try (ZipOutputStream zos = new ZipOutputStream(new File(outApk))) {
                 zos.putNextEntry("AndroidManifest.xml");
-                zos.write(manifestData );
+                zos.write(manifestData);
                 zos.closeEntry();
+
                 zos.putNextEntry("classes.dex");
                 zos.write(processDex);
+                zos.closeEntry();
+
+                zos.putNextEntry("armeabi-v7a/libmthook.so");
+                zos.write(arm);
+                zos.closeEntry();
+
+                zos.putNextEntry("arm64-v8a/libmthook.so");
+                zos.write(arm64);
+                zos.closeEntry();
+
+                zos.putNextEntry("x86/libmthook.so");
+                zos.write(x86);
+                zos.closeEntry();
+
+                zos.putNextEntry("x86_64/libmthook.so");
+                zos.write(x86_64);
                 zos.closeEntry();
 
                 Enumeration<ZipEntry> enumeration = zipFile.getEntries();
@@ -157,7 +186,7 @@ public class BinSignatureTool {
 
     private byte @NotNull [] processDex(DexBackedDexFile dex) throws Exception {
         DexBuilder dexBuilder = new DexBuilder(Opcodes.getDefault());
-        try (InputStream fis = mContext.getResources().openRawResource(R.raw.mt_hook)) {
+        try (InputStream fis = mContext.getResources().openRawResource(R.raw.mt2_hook)) {
             String src = new String(StreamUtil.readBytes(fis), StandardCharsets.UTF_8);
             if (customApplication) {
                 if (customApplicationName.startsWith(".")) {
@@ -264,7 +293,7 @@ public class BinSignatureTool {
             throw new IOException();
         ArrayList<String> list = new ArrayList<>(axml.mTableStrings.getSize());
         axml.mTableStrings.getStrings(list);
-        list.add("cc.binmt.signature.PmsHookApplication");
+        list.add("bin.mt.apksignaturekillerplus.HookApplication");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         axml.write(list, baos);
         return baos.toByteArray();
