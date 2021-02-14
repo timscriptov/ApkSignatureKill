@@ -95,6 +95,14 @@
         android:layout_height="wrap_content"
         android:text="Bin Signature Kill" />
 
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/superSignatureKill"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Super Signature Kill" />
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/hookRun"
         android:layout_width="match_parent"

@@ -1,3 +1,4 @@
 include ':app',
-        ':filepicker'
+        ':filepicker',
+        ':dx'
 rootProject.name = "SignatureKill"

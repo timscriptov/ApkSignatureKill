@@ -27,6 +27,7 @@ import com.signs.yowal.utils.BinSignatureTool;
 import com.signs.yowal.utils.MyAppInfo;
 import com.signs.yowal.utils.Preferences;
 import com.signs.yowal.utils.SignatureTool;
+import com.signs.yowal.utils.SuperSignatureTool;
 import com.tianyu.killer.R;
 
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +40,7 @@ public class HomeFragment extends Fragment {
     private AppCompatTextView apkName;
     private AppCompatTextView apkPack;
     private AppCompatCheckBox binSignatureTool;
-
+    private AppCompatCheckBox superSignatureTool;
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View mView = inflater.inflate(R.layout.activity_main, container, false);
@@ -80,6 +81,12 @@ public class HomeFragment extends Fragment {
         binSignatureTool.setChecked(Preferences.getBinMtSignatureKill());
         binSignatureTool.setOnCheckedChangeListener((p1, p2) -> {
             Preferences.setBinMtSignatureKill(p2);
+        });
+
+        superSignatureTool = mView.findViewById(R.id.superSignatureKill);
+        superSignatureTool.setChecked(Preferences.getSuperSignatureKill());
+        superSignatureTool.setOnCheckedChangeListener((p1, p2) -> {
+            Preferences.setSuperSignatureKill(p2);
         });
 
         (mView.findViewById(R.id.browseApk)).setOnClickListener(p1 -> {
@@ -141,8 +148,8 @@ public class HomeFragment extends Fragment {
                         BinSignatureTool binSignatureTool = new BinSignatureTool(getContext());
                         binSignatureTool.setPath(srcApk, outApk);
                         binSignatureTool.Kill();
-                    } else {
-                        SignatureTool signatureTool = new SignatureTool(getContext());
+                    } else if (Preferences.getSuperSignatureKill()) {
+                        SuperSignatureTool signatureTool = new SuperSignatureTool(getContext());
                         signatureTool.setPath(srcApk, outApk);
                         signatureTool.Kill();
                     }

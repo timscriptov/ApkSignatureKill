@@ -14,4 +14,11 @@ object Preferences {
         set(value) {
             App.getPreferences().edit().putBoolean("binMtSignatureKill", value).apply()
         }
+
+    @JvmStatic
+    var superSignatureKill: Boolean
+        get() = App.getPreferences().getBoolean("superSignatureKill", false)
+        set(value) {
+            App.getPreferences().edit().putBoolean("superSignatureKill", value).apply()
+        }
 }

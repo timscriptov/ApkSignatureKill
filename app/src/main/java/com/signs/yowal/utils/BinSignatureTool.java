@@ -92,8 +92,9 @@ public class BinSignatureTool {
             System.out.println("\nЗапись в APK:" + outApk);
             try (ZipOutputStream zos = new ZipOutputStream(new File(outApk))) {
                 zos.putNextEntry("AndroidManifest.xml");
-                zos.write(manifestData );
+                zos.write(manifestData);
                 zos.closeEntry();
+
                 zos.putNextEntry("classes.dex");
                 zos.write(processDex);
                 zos.closeEntry();
@@ -157,7 +158,7 @@ public class BinSignatureTool {
 
     private byte @NotNull [] processDex(DexBackedDexFile dex) throws Exception {
         DexBuilder dexBuilder = new DexBuilder(Opcodes.getDefault());
-        try (InputStream fis = mContext.getResources().openRawResource(R.raw.mt_hook)) {
+        try (InputStream fis = mContext.getResources().openRawResource(R.raw.mt_hook_app)) {
             String src = new String(StreamUtil.readBytes(fis), StandardCharsets.UTF_8);
             if (customApplication) {
                 if (customApplicationName.startsWith(".")) {

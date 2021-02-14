@@ -61,7 +61,7 @@ public class BinPlusSignatureTool {
         tempApk = new File(srcApk).getParentFile().toString() + "/.temp";
     }
 
-    public void Kill() {
+    /*public void Kill() {
         new File(outApk).delete();
         System.out.println("Чтение подписи:" + srcApk);
         signatures = getApkSignInfo(srcApk);
@@ -144,7 +144,7 @@ public class BinPlusSignatureTool {
         } catch (Throwable th2) {
             th2.printStackTrace();
         }
-    }
+    }*/
 
     private Certificate @Nullable [] loadCertificates(JarFile jarFile, JarEntry jarEntry,
                                                       byte[] bArr) {
@@ -184,7 +184,7 @@ public class BinPlusSignatureTool {
         }
     }
 
-    private byte @NotNull [] processDex(DexBackedDexFile dex) throws Exception {
+    /*private byte @NotNull [] processDex(DexBackedDexFile dex) throws Exception {
         DexBuilder dexBuilder = new DexBuilder(Opcodes.getDefault());
         try (InputStream fis = mContext.getResources().openRawResource(R.raw.mt2_hook)) {
             String src = new String(StreamUtil.readBytes(fis), StandardCharsets.UTF_8);
@@ -210,7 +210,7 @@ public class BinPlusSignatureTool {
         MemoryDataStore store = new MemoryDataStore();
         dexBuilder.writeTo(store);
         return Arrays.copyOf(store.getBufferData(), store.getSize());
-    }
+    }*/
 
     private byte @NotNull [] parseManifest(InputStream is) throws IOException {
         AXmlDecoder axml = AXmlDecoder.decode(is);
