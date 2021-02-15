@@ -6,7 +6,7 @@
     android:orientation="vertical">
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/donate"
+        android:id="@+id/qiwi"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackground"
@@ -21,7 +21,7 @@
         android:focusable="true" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/git"
+        android:id="@+id/visa"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackground"
@@ -36,7 +36,7 @@
         android:focusable="true" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/about"
+        android:id="@+id/paypal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackground"

@@ -2,6 +2,8 @@ package com.signs.yowal.fragments;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -194,8 +196,26 @@ public class HomeFragment extends Fragment {
 
     private void donate() {
         Dialog bottomDialog = new Dialog(getContext(), R.style.BottomDialog);
-        View contentView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_content_donate_circle, null);
 
+        View contentView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_content_donate_circle, null);
+        ClipboardManager cmb = (ClipboardManager)getContext().getSystemService ( Context.CLIPBOARD_SERVICE );
+
+        (contentView.findViewById(R.id.qiwi)).setOnClickListener(p1 -> {
+            cmb.setText("4693 9575 5605 5692");
+            Toast.makeText(getContext(), "Скопирован в буфер обмена", Toast.LENGTH_LONG ).show ( );
+        });
+
+        (contentView.findViewById(R.id.visa)).setOnClickListener(p1 -> {
+            cmb.setText("4276 3200 1538 3012");
+            Toast.makeText(getContext(), "Скопирован в буфер обмена", Toast.LENGTH_LONG ).show ( );
+        });
+
+        (contentView.findViewById(R.id.visa)).setOnClickListener(p1 -> {
+            String url = "https://www.paypal.me/timscriptov";
+            Intent intent1 = new Intent(Intent.ACTION_VIEW);
+            intent1.setData(Uri.parse(url));
+            startActivity(intent1);
+        });
 
         bottomDialog.setContentView(contentView);
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentView.getLayoutParams();
