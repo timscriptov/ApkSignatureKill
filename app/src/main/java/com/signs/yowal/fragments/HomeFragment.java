@@ -210,7 +210,7 @@ public class HomeFragment extends Fragment {
             Toast.makeText(getContext(), "Скопирован в буфер обмена", Toast.LENGTH_LONG ).show ( );
         });
 
-        (contentView.findViewById(R.id.visa)).setOnClickListener(p1 -> {
+        (contentView.findViewById(R.id.paypal)).setOnClickListener(p1 -> {
             String url = "https://www.paypal.me/timscriptov";
             Intent intent1 = new Intent(Intent.ACTION_VIEW);
             intent1.setData(Uri.parse(url));
