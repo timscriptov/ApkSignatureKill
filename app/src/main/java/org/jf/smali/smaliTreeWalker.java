@@ -882,9 +882,11 @@ public class smaliTreeWalker extends TreeParser {
     private int apiLevel = 15;
     private Opcodes opcodes = Opcodes.forApi(apiLevel);
     private DexBuilder dexBuilder;
+
     public smaliTreeWalker(TreeNodeStream input) {
         this(input, new RecognizerSharedState());
     }
+
     public smaliTreeWalker(TreeNodeStream input, RecognizerSharedState state) {
         super(input, state);
     }

@@ -6,7 +6,7 @@ import com.android.dex.Dex;
 import com.android.dx.command.dexer.DxContext;
 import com.android.dx.merge.CollisionPolicy;
 import com.android.dx.merge.DexMerger;
-import com.tianyu.killer.R;
+import com.mcal.apkkiller.R;
 
 import org.jetbrains.annotations.NotNull;
 import org.jf.dexlib2.Opcodes;
@@ -23,16 +23,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.zip.ZipInputStream;
 
 import bin.util.StreamUtil;
 import bin.xml.decode.AXmlDecoder;
@@ -71,7 +67,7 @@ public class SuperSignatureTool {
 
             System.out.println("  -- Обработка AndroidManifest.xml");
             ZipEntry manifestEntry = zipFile.getEntry("AndroidManifest.xml");
-            byte[] manifestData  = parseManifest(zipFile.getInputStream(manifestEntry));
+            byte[] manifestData = parseManifest(zipFile.getInputStream(manifestEntry));
 
             System.out.println("\nОптимизация APK:" + outApk);
             ZipOutputStream zipOutputStream = new ZipOutputStream(new File(tempApk));
@@ -120,7 +116,7 @@ public class SuperSignatureTool {
     }
 
     private byte @NotNull [] processDex() throws Exception {
-        DexBackedDexFile dex  = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(dexMerge()));
+        DexBackedDexFile dex = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(dexMerge()));
 
         DexBuilder dexBuilder = new DexBuilder(Opcodes.getDefault());
         try (InputStream fis = mContext.getResources().openRawResource(R.raw.super_hook_app)) {

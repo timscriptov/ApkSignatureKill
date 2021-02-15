@@ -3,18 +3,12 @@ package com.signs.yowal.utils;
 import android.content.Context;
 import android.util.Base64;
 
-import com.google.common.collect.Lists;
-import com.tianyu.killer.R;
+import com.mcal.apkkiller.R;
 
 import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jf.baksmali.Adaptors.ClassDefinition;
-import org.jf.baksmali.BaksmaliOptions;
 import org.jf.dexlib2.Opcodes;
-import org.jf.dexlib2.analysis.ClassPath;
-import org.jf.dexlib2.analysis.DexClassProvider;
 import org.jf.dexlib2.dexbacked.DexBackedClassDef;
 import org.jf.dexlib2.dexbacked.DexBackedDexFile;
 import org.jf.dexlib2.dexbacked.raw.ItemType;
@@ -23,7 +17,6 @@ import org.jf.dexlib2.writer.builder.DexBuilder;
 import org.jf.dexlib2.writer.io.MemoryDataStore;
 import org.jf.smali.Smali;
 import org.jf.smali.SmaliOptions;
-import org.jf.util.IndentingWriter;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -31,12 +24,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -81,10 +70,10 @@ public class SignatureTool {
         try (ZipFile zipFile = new ZipFile(srcApk)) {
             System.out.println("  -- Обработка AndroidManifest.xml");
             ZipEntry manifestEntry = zipFile.getEntry("AndroidManifest.xml");
-            byte[] manifestData  = parseManifest(zipFile.getInputStream(manifestEntry));
+            byte[] manifestData = parseManifest(zipFile.getInputStream(manifestEntry));
 
             ZipEntry dexEntry = zipFile.getEntry("classes.dex");
-            DexBackedDexFile dex  = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(dexEntry)));
+            DexBackedDexFile dex = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(dexEntry)));
             System.out.println("  -- Обработка classes.dex");
             byte[] processDex = processDex(dex);
 
@@ -101,7 +90,7 @@ public class SignatureTool {
             }
             zipOutputStream.close();
             System.out.println("\nЗапись в APK:" + outApk);
-            try (ZipOutputStream zos = new ZipOutputStream(new File(outApk))){
+            try (ZipOutputStream zos = new ZipOutputStream(new File(outApk))) {
                 zos.putNextEntry("AndroidManifest.xml");
                 zos.write(manifestData);
                 zos.closeEntry();

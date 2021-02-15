@@ -3,43 +3,25 @@ package com.signs.yowal.utils;
 import android.content.Context;
 import android.util.Base64;
 
-import com.tianyu.killer.R;
-
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jf.dexlib2.Opcodes;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
-import org.jf.dexlib2.dexbacked.DexBackedDexFile;
 import org.jf.dexlib2.dexbacked.raw.ItemType;
-import org.jf.dexlib2.iface.ClassDef;
-import org.jf.dexlib2.writer.builder.DexBuilder;
-import org.jf.dexlib2.writer.io.MemoryDataStore;
-import org.jf.smali.Smali;
-import org.jf.smali.SmaliOptions;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import bin.util.StreamUtil;
 import bin.xml.decode.AXmlDecoder;
 import bin.xml.decode.AXmlResourceParser;
 import bin.xml.decode.XmlPullParser;
-import bin.zip.ZipEntry;
-import bin.zip.ZipFile;
-import bin.zip.ZipOutputStream;
 
 public class BinPlusSignatureTool {
     private boolean customApplication = false;

@@ -11,7 +11,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.Toolbar;
 
-import com.tianyu.killer.R;
+import com.mcal.apkkiller.R;
 
 public class CenteredToolBar extends Toolbar {
 

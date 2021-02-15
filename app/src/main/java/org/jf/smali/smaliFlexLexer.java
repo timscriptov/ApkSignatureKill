@@ -2880,6 +2880,7 @@ public class smaliFlexLexer implements TokenSource, LexerErrorInterface {
     private String sourceName;
     private boolean suppressErrors;
     private RecognitionException firstException = null;
+
     /**
      * Creates a new scanner
      *

@@ -139,6 +139,7 @@ public class RegisterType {
     public final byte category;
     @Nullable
     public final TypeProto type;
+
     private RegisterType(byte category, @Nullable TypeProto type) {
         assert ((category == REFERENCE || category == UNINIT_REF || category == UNINIT_THIS) && type != null) ||
                 ((category != REFERENCE && category != UNINIT_REF && category != UNINIT_THIS) && type == null);

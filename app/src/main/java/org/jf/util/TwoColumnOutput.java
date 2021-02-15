@@ -84,6 +84,7 @@ public final class TwoColumnOutput {
         this.rightWidth = rightWidth;
         this.spacer = spacer;
     }
+
     /**
      * Constructs an instance.
      *

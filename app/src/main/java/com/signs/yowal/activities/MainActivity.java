@@ -6,17 +6,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
+import com.mcal.apkkiller.R;
 import com.signs.yowal.adapters.ViewPagerAdapter;
 import com.signs.yowal.fragments.HomeFragment;
 import com.signs.yowal.ui.Dialogs;
 import com.signs.yowal.utils.ExceptionHandler;
 import com.signs.yowal.view.CenteredToolBar;
-import com.tianyu.killer.R;
 
 import org.jetbrains.annotations.NotNull;
 

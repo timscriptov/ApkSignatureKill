@@ -23,12 +23,11 @@ import androidx.fragment.app.Fragment;
 import com.developer.filepicker.model.DialogConfigs;
 import com.developer.filepicker.model.DialogProperties;
 import com.developer.filepicker.view.FilePickerDialog;
+import com.mcal.apkkiller.R;
 import com.signs.yowal.utils.BinSignatureTool;
 import com.signs.yowal.utils.MyAppInfo;
 import com.signs.yowal.utils.Preferences;
-import com.signs.yowal.utils.SignatureTool;
 import com.signs.yowal.utils.SuperSignatureTool;
-import com.tianyu.killer.R;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -41,6 +40,7 @@ public class HomeFragment extends Fragment {
     private AppCompatTextView apkPack;
     private AppCompatCheckBox binSignatureTool;
     private AppCompatCheckBox superSignatureTool;
+
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View mView = inflater.inflate(R.layout.activity_main, container, false);

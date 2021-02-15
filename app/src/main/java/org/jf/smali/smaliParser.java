@@ -1396,9 +1396,11 @@ public class smaliParser extends Parser {
     private boolean allowOdex = false;
     private int apiLevel = 15;
     private Opcodes opcodes = Opcodes.forApi(apiLevel);
+
     public smaliParser(TokenStream input) {
         this(input, new RecognizerSharedState());
     }
+
     public smaliParser(TokenStream input, RecognizerSharedState state) {
         super(input, state);
     }

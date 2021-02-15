@@ -3,7 +3,7 @@ package com.signs.yowal.utils;
 import android.content.Context;
 import android.util.Base64;
 
-import com.tianyu.killer.R;
+import com.mcal.apkkiller.R;
 
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -69,10 +69,10 @@ public class BinSignatureTool {
         try (ZipFile zipFile = new ZipFile(srcApk);) {
             System.out.println("  -- Обработка AndroidManifest.xml");
             ZipEntry manifestEntry = zipFile.getEntry("AndroidManifest.xml");
-            byte[] manifestData  = parseManifest(zipFile.getInputStream(manifestEntry));
+            byte[] manifestData = parseManifest(zipFile.getInputStream(manifestEntry));
 
             ZipEntry dexEntry = zipFile.getEntry("classes.dex");
-            DexBackedDexFile dex  = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(dexEntry)));
+            DexBackedDexFile dex = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), new BufferedInputStream(zipFile.getInputStream(dexEntry)));
             System.out.println("  -- Обработка classes.dex");
             byte[] processDex = processDex(dex);
 

@@ -7,8 +7,8 @@ import android.os.Build
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import com.tianyu.killer.BuildConfig
-import com.tianyu.killer.R
+import com.mcal.apkkiller.BuildConfig
+import com.mcal.apkkiller.R
 
 /**
  * @author Тимашков Иван
