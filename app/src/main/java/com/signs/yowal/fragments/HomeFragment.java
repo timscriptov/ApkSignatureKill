@@ -1,6 +1,10 @@
 package com.signs.yowal.fragments;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -8,9 +12,11 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -25,6 +31,7 @@ import com.developer.filepicker.model.DialogProperties;
 import com.developer.filepicker.view.FilePickerDialog;
 import com.mcal.apkkiller.R;
 import com.signs.yowal.utils.BinSignatureTool;
+import com.signs.yowal.utils.DensityUtil;
 import com.signs.yowal.utils.MyAppInfo;
 import com.signs.yowal.utils.Preferences;
 import com.signs.yowal.utils.SuperSignatureTool;
@@ -97,6 +104,10 @@ public class HomeFragment extends Fragment {
             hookRun();
         });
 
+        (mView.findViewById(R.id.menu)).setOnClickListener(p1 -> {
+            show2();
+        });
+
         return mView;
     }
 
@@ -121,6 +132,80 @@ public class HomeFragment extends Fragment {
             }
         });
         dialog.show();
+    }
+
+    private void show2() {
+        Dialog bottomDialog = new Dialog(getContext(), R.style.BottomDialog);
+        View contentView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_content_circle, null);
+
+        (contentView.findViewById(R.id.donate)).setOnClickListener(p1 -> {
+            donate();
+        });
+
+        (contentView.findViewById(R.id.git)).setOnClickListener(p1 -> {
+            String url = "https://github.com/TimScriptov/ApkSignatureKill";
+            Intent intent1 = new Intent(Intent.ACTION_VIEW);
+            intent1.setData(Uri.parse(url));
+            startActivity(intent1);
+        });
+
+        (contentView.findViewById(R.id.about)).setOnClickListener(p1 -> {
+            about();
+        });
+
+        (contentView.findViewById(R.id.exit)).setOnClickListener(p1 -> {
+            System.exit(0);
+        });
+
+        bottomDialog.setContentView(contentView);
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentView.getLayoutParams();
+        params.width = getResources().getDisplayMetrics().widthPixels - DensityUtil.dp2px(getContext(), 16f);
+        params.bottomMargin = DensityUtil.dp2px(getContext(), 8f);
+        contentView.setLayoutParams(params);
+        bottomDialog.setCanceledOnTouchOutside(true);
+        bottomDialog.getWindow().setGravity(Gravity.BOTTOM);
+        bottomDialog.getWindow().setWindowAnimations(R.style.BottomDialog_Animation);
+        bottomDialog.show();
+    }
+
+    private void about() {
+        Dialog bottomDialog = new Dialog(getContext(), R.style.BottomDialog);
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout contentView = new LinearLayout(getActivity());
+        contentView.setBackgroundResource(R.drawable.shape_dialog);
+        contentView.setOrientation(LinearLayout.VERTICAL);
+        contentView.setPadding(40, 0, 40, 0);
+        contentView.setLayoutParams(layoutParams);
+        final AppCompatTextView msg = new AppCompatTextView(getContext());
+        msg.setText(R.string.about);
+        contentView.addView(msg);
+
+        bottomDialog.setContentView(contentView);
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentView.getLayoutParams();
+        params.width = getResources().getDisplayMetrics().widthPixels - DensityUtil.dp2px(getContext(), 16f);
+        params.bottomMargin = DensityUtil.dp2px(getContext(), 8f);
+        contentView.setLayoutParams(params);
+        bottomDialog.setCanceledOnTouchOutside(true);
+        bottomDialog.getWindow().setGravity(Gravity.BOTTOM);
+        bottomDialog.getWindow().setWindowAnimations(R.style.BottomDialog_Animation);
+        bottomDialog.show();
+    }
+
+    private void donate() {
+        Dialog bottomDialog = new Dialog(getContext(), R.style.BottomDialog);
+        View contentView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_content_donate_circle, null);
+
+
+        bottomDialog.setContentView(contentView);
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentView.getLayoutParams();
+        params.width = getResources().getDisplayMetrics().widthPixels - DensityUtil.dp2px(getContext(), 16f);
+        params.bottomMargin = DensityUtil.dp2px(getContext(), 8f);
+        contentView.setLayoutParams(params);
+        bottomDialog.setCanceledOnTouchOutside(true);
+        bottomDialog.getWindow().setGravity(Gravity.BOTTOM);
+        bottomDialog.getWindow().setWindowAnimations(R.style.BottomDialog_Animation);
+        bottomDialog.show();
     }
 
     public void hookRun() {

@@ -8,5 +8,12 @@
     <string name="permission_grant_failed_message">Cannot grant permission: read external storage. Please go to the settings page to grant the relevant permissions.</string>
     <string name="scoped_storage_title">Android 11 R changes</string>
     <string name="scoped_storage_msg">Android 11 introduce a new file-management way called \"Scoped Storage\". You need to grant a special permission!</string>
+    <string name="about">\n\nApkSignatureKill 4.0\n\n
+    Приложение для удаления проверки хеша подписи, дексов.\n\n
+    Heavenly Hook используется по умолчанию. Обходит проверку целостночти подписи и дексов.\n\n
+    Bin Hook обходит проверку целостности подписи.\n\n
+    Super Hook обходит проверку целостности всего приложения.\n\n
+    Приложение находится в активной разработке и может содержать ошибки. Работоспособность хуков не гарантирую, они не являются моей разработкой.\n\n
+    </string>
 
 </resources>

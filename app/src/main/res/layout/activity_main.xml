@@ -122,4 +122,15 @@
         android:text="© 2021 Иван Тимашков"
         android:textAppearance="?android:textAppearanceSmall" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/menu"
+        android:src="@drawable/ic_menu"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="10dp"
+        android:text="Hook" />
+
 </LinearLayout>
