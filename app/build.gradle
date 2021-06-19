@@ -6,7 +6,7 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.mcal.apkkiller"
+        applicationId "com.mcal.apksignkill"
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 4
@@ -46,6 +46,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':filepicker')
     implementation project(':dx')
+    implementation project(':apksigner')
 
     implementation 'com.google.android.material:material:1.3.0'
 
