@@ -33,6 +33,11 @@
             android:theme="@style/Theme.SignatureKill"
             android:name="com.mcal.apksignkill.activities.ExceptionActivity" />
 
+        <activity
+            android:label="Application Error"
+            android:theme="@style/Theme.SignatureKill"
+            android:name="com.mcal.apksignkill.activities.SettingsActivity" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.mcal.apkkiller.fileprovider"
