@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 'android-S'
     buildToolsVersion "30.0.3"
 
     defaultConfig {
@@ -49,12 +49,12 @@ dependencies {
 
     implementation 'com.google.android.material:material:1.3.0'
 
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.preference:preference-ktx:1.1.1'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10"
-    implementation 'org.jetbrains:annotations:19.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.10"
+    implementation 'org.jetbrains:annotations:21.0.1'
 
-    implementation 'commons-io:commons-io:2.8.0'
+    implementation 'commons-io:commons-io:2.10.0'
 }
