@@ -1,11 +1,16 @@
 package com.mcal.apksignkill.activities;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
@@ -41,6 +46,21 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q && !Environment.isExternalStorageManager()) {
             Dialogs.showScopedStorageDialog(this);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @SuppressLint("WrongConstant")
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.settings) {
+            startActivityForResult(new Intent(this, SettingsActivity.class), 0);
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("ConstantConditions")

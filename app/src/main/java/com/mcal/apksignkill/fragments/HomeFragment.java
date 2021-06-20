@@ -1,5 +1,6 @@
 package com.mcal.apksignkill.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipboardManager;
@@ -31,6 +32,8 @@ import com.developer.filepicker.model.DialogConfigs;
 import com.developer.filepicker.model.DialogProperties;
 import com.developer.filepicker.view.FilePickerDialog;
 import com.mcal.apksignkill.R;
+import com.mcal.apksignkill.signer.SignatureTool;
+import com.mcal.apksignkill.ui.CustomSignDialog;
 import com.mcal.apksignkill.utils.BinSignatureTool;
 import com.mcal.apksignkill.utils.DensityUtil;
 import com.mcal.apksignkill.utils.MyAppInfo;
@@ -102,7 +105,7 @@ public class HomeFragment extends Fragment {
         });
 
         (mView.findViewById(R.id.hookRun)).setOnClickListener(p1 -> {
-            hookRun();
+            runProcess();
         });
 
         (mView.findViewById(R.id.menu)).setOnClickListener(p1 -> {
@@ -110,6 +113,14 @@ public class HomeFragment extends Fragment {
         });
 
         return mView;
+    }
+
+    private void runProcess() {
+        if (Preferences.isCustomSignature()) {
+            new CustomSignDialog((p1, p2) -> hookRun()).show(getContext());
+        } else {
+            hookRun();
+        }
     }
 
     public void browseApk() {
@@ -234,6 +245,7 @@ public class HomeFragment extends Fragment {
         progressDialog.setIndeterminate(true);
         progressDialog.show();
 
+        @SuppressLint("HandlerLeak")
         Handler mHandler = new Handler() {
             public void handleMessage(Message msg) {
                 progressDialog.dismiss();
@@ -257,10 +269,12 @@ public class HomeFragment extends Fragment {
                         signatureTool.setPath(srcApk, outApk);
                         signatureTool.Kill();
                     }
-                    toast("Обработка завершена, подпишите самостоятельно" + outApk);
-                    dialogFinished();
                 } catch (Exception e) {
                     toast("Обработка не удалась:" + e.toString());
+                } finally {
+                    if (SignatureTool.sign(getContext(), new File(outApk), new File(outApk.replace(".apk", "_sign.apk")))) {
+                        dialogFinished();
+                    }
                 }
                 mHandler.sendEmptyMessage(0);
                 Looper.loop();
@@ -275,7 +289,7 @@ public class HomeFragment extends Fragment {
     public void dialogFinished() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
         alertDialog.setTitle("Обработка завершена");
-        alertDialog.setMessage("Файл был сохранен в каталоге, подпишите его");
+        alertDialog.setMessage("Файл был сохранен в каталоге");
         alertDialog.setCancelable(true);
         alertDialog.setPositiveButton("Ок", null);
         alertDialog.show();
