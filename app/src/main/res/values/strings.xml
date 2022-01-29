@@ -4,8 +4,6 @@
     <string name="settings_title">Settings</string>
 
     <!--Permissions-->
-    <string name="permission_grant_failed_title">Permission Grant Failed</string>
-    <string name="permission_grant_failed_message">Cannot grant permission: read external storage. Please go to the settings page to grant the relevant permissions.</string>
     <string name="scoped_storage_title">Android 11 R changes</string>
     <string name="scoped_storage_msg">Android 11 introduce a new file-management way called \"Scoped Storage\". You need to grant a special permission!</string>
     <string name="about">\n\nApkSignatureKill 4.0\n\n

@@ -55,7 +55,6 @@ dependencies {
 
     implementation 'com.google.guava:guava:31.0.1-android'
 
-
     //implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10"
     implementation 'org.jetbrains:annotations:22.0.0'
     implementation 'com.madgag.spongycastle:pkix:1.54.0.0'
