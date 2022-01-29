@@ -87,7 +87,14 @@
 
     </LinearLayout>
 
-    <androidx.appcompat.widget.AppCompatCheckBox
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp">
+
+    <androidx.appcompat.widget.AppCompatRadioButton
         android:id="@+id/binMtSignatureKill"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
@@ -95,7 +102,7 @@
         android:layout_height="wrap_content"
         android:text="Bin Signature Kill" />
 
-    <androidx.appcompat.widget.AppCompatCheckBox
+    <androidx.appcompat.widget.AppCompatRadioButton
         android:id="@+id/superSignatureKill"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
@@ -103,7 +110,9 @@
         android:layout_height="wrap_content"
         android:text="Super Signature Kill" />
 
-    <androidx.appcompat.widget.AppCompatButton
+    </RadioGroup>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/hookRun"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -119,18 +128,7 @@
         android:paddingLeft="6.0dip"
         android:singleLine="true"
         android:gravity="center"
-        android:text="© 2021 Иван Тимашков"
+        android:text="© 2021 - 2022 Иван Тимашков"
         android:textAppearance="?android:textAppearanceSmall" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/menu"
-        android:src="@drawable/ic_menu"
-        android:layout_gravity="center"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginRight="10dp"
-        android:text="Hook" />
 
 </LinearLayout>
