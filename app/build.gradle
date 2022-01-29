@@ -2,8 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 'android-S'
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 32
 
     defaultConfig {
         applicationId "com.mcal.apksignkill"
