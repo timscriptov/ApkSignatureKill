@@ -16,6 +16,8 @@
 
 package com.android.apksigner;
 
+import androidx.annotation.NonNull;
+
 import java.util.Arrays;
 
 /**
@@ -44,7 +46,7 @@ class OptionsParser {
     /**
      * Constructs a new {@code OptionsParser} initialized with the provided command-line.
      */
-    public OptionsParser(String[] params) {
+    public OptionsParser(@NonNull String[] params) {
         mParams = params.clone();
     }
 

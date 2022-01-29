@@ -18,7 +18,7 @@ package com.android.apksigner;
 
 import android.os.Build;
 
-import androidx.annotation.RequiresApi;
+import androidx.annotation.NonNull;
 
 import com.android.apksig.ApkSigner;
 import com.android.apksig.ApkVerifier;
@@ -28,6 +28,7 @@ import com.android.apksig.apk.ApkFormatException;
 import com.android.apksig.apk.MinSdkVersionException;
 import com.android.apksig.util.DataSource;
 import com.android.apksig.util.DataSources;
+import com.android.apksigner.utils.FileUtils;
 
 import org.conscrypt.OpenSSLProvider;
 import org.jetbrains.annotations.NotNull;
@@ -56,6 +57,7 @@ import java.security.interfaces.ECKey;
 import java.security.interfaces.RSAKey;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -75,8 +77,7 @@ public class ApkSignerTool {
     private static MessageDigest sha1 = null;
     private static MessageDigest md5 = null;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public static void main(String[] params) throws Exception {
+    public static void main(@NonNull String[] params) throws Exception {
         if ((params.length == 0) || ("--help".equals(params[0])) || ("-h".equals(params[0]))) {
             printUsage(HELP_PAGE_GENERAL);
             return;
@@ -131,8 +132,7 @@ public class ApkSignerTool {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private static void sign(String[] params) throws Exception {
+    private static void sign(@NonNull String[] params) throws Exception {
         if (params.length == 0) {
             printUsage(HELP_PAGE_SIGN);
             return;
@@ -360,7 +360,12 @@ public class ApkSignerTool {
         if (v4SigningEnabled) {
             final File outputV4SignatureFile =
                     new File(outputApk.getCanonicalPath() + ".idsig");
-            Files.deleteIfExists(outputV4SignatureFile.toPath());
+            //Files.deleteIfExists(outputV4SignatureFile.toPath());
+            if (outputV4SignatureFile.exists()){
+                outputV4SignatureFile.delete();
+            }
+
+
             apkSignerBuilder.setV4SignatureOutputFile(outputV4SignatureFile);
         }
         if (sourceStampSignerConfig != null) {
@@ -380,8 +385,9 @@ public class ApkSignerTool {
                     e);
         }
         if (!tmpOutputApk.getCanonicalPath().equals(outputApk.getCanonicalPath())) {
-            Files.move(
-                    tmpOutputApk.toPath(), outputApk.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            if(FileUtils.moveFile(tmpOutputApk, outputApk)) {
+                System.out.println("Moved");
+            }
         }
 
         if (verbose) {
@@ -624,7 +630,7 @@ public class ApkSignerTool {
         }
     }
 
-    private static void rotate(String[] params) throws Exception {
+    private static void rotate(@NonNull String[] params) throws Exception {
         if (params.length == 0) {
             printUsage(HELP_PAGE_ROTATE);
             return;
@@ -756,7 +762,7 @@ public class ApkSignerTool {
         }
     }
 
-    public static void lineage(String[] params) throws Exception {
+    public static void lineage(@NonNull String[] params) throws Exception {
         if (params.length == 0) {
             printUsage(HELP_PAGE_LINEAGE);
             return;
@@ -886,7 +892,8 @@ public class ApkSignerTool {
         }
     }
 
-    private static SignerParams processSignerParams(OptionsParser optionsParser)
+    @NonNull
+    private static SignerParams processSignerParams(@NonNull OptionsParser optionsParser)
             throws OptionsParser.OptionsException, ParameterException {
         SignerParams signerParams = new SignerParams();
         String optionName;

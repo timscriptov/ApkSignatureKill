@@ -16,6 +16,9 @@
 
 package com.android.apksigner;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
 import java.io.File;
@@ -66,7 +69,7 @@ public class PasswordRetriever implements AutoCloseable {
      * Adds the provided password to the provided list. Does nothing if the password is already in
      * the list.
      */
-    private static void addPassword(List<char[]> passwords, char[] password) {
+    private static void addPassword(@NonNull List<char[]> passwords, char[] password) {
         for (char[] existingPassword : passwords) {
             if (Arrays.equals(password, existingPassword)) {
                 return;
@@ -75,7 +78,8 @@ public class PasswordRetriever implements AutoCloseable {
         passwords.add(password);
     }
 
-    private static byte[] encodePassword(char[] pwd, Charset cs) throws IOException {
+    @NonNull
+    private static byte[] encodePassword(char[] pwd, @NonNull Charset cs) throws IOException {
         ByteBuffer pwdBytes =
                 cs.newEncoder()
                         .onMalformedInput(CodingErrorAction.REPLACE)
@@ -86,7 +90,8 @@ public class PasswordRetriever implements AutoCloseable {
         return encoded;
     }
 
-    private static char[] decodePassword(byte[] pwdBytes, Charset encoding) throws IOException {
+    @NonNull
+    private static char[] decodePassword(byte[] pwdBytes, @NonNull Charset encoding) throws IOException {
         CharBuffer pwdChars =
                 encoding.newDecoder()
                         .onMalformedInput(CodingErrorAction.REPLACE)
@@ -130,6 +135,7 @@ public class PasswordRetriever implements AutoCloseable {
      * Returns the character encoding used by the console or {@code null} if the encoding is not
      * known.
      */
+    @Nullable
     private static Charset getConsoleEncoding() {
         // IMPLEMENTATION NOTE: There is no public API for obtaining the console's character
         // encoding. We thus cheat by using implementation details of the most popular JVMs.
@@ -168,7 +174,8 @@ public class PasswordRetriever implements AutoCloseable {
         return Charset.forName(charsetName);
     }
 
-    private static byte[] readEncodedPassword(InputStream in) throws IOException {
+    @NonNull
+    private static byte[] readEncodedPassword(@NonNull InputStream in) throws IOException {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         int b;
         while ((b = in.read()) != -1) {
@@ -217,7 +224,7 @@ public class PasswordRetriever implements AutoCloseable {
      *                               to obtain the console's character encoding.
      */
     public List<char[]> getPasswords(
-            String spec, String description, Charset... additionalPwdEncodings)
+            @NonNull String spec, String description, Charset... additionalPwdEncodings)
             throws IOException {
         // IMPLEMENTATION NOTE: Java KeyStore and PBEKeySpec APIs take passwords as arrays of
         // Unicode characters (char[]). Unfortunately, it appears that Sun/Oracle keytool and
@@ -326,6 +333,7 @@ public class PasswordRetriever implements AutoCloseable {
      * Returns the provided password and all password variants derived from the password. The
      * resulting list is guaranteed to contain at least one element.
      */
+    @NonNull
     private List<char[]> getPasswords(char[] pwd, Charset... additionalEncodings) {
         List<char[]> passwords = new ArrayList<>(3);
         addPasswords(passwords, pwd, additionalEncodings);
@@ -338,6 +346,7 @@ public class PasswordRetriever implements AutoCloseable {
      *
      * @param encodedPwd password encoded using {@code encodingForDecoding}.
      */
+    @NonNull
     private List<char[]> getPasswords(
             byte[] encodedPwd, Charset encodingForDecoding,
             Charset... additionalEncodings) {

@@ -9,6 +9,8 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
 
     <application
         android:name="com.mcal.apksignkill.App"
@@ -21,22 +23,13 @@
         android:theme="@style/Theme.SignatureKill">
         <activity
             android:label="@string/app_name"
-            android:name="com.mcal.apksignkill.activities.MainActivity">
+            android:name="com.mcal.apksignkill.activities.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
-        <activity
-            android:label="Application Error"
-            android:theme="@style/Theme.SignatureKill"
-            android:name="com.mcal.apksignkill.activities.ExceptionActivity" />
-
-        <activity
-            android:label="Application Error"
-            android:theme="@style/Theme.SignatureKill"
-            android:name="com.mcal.apksignkill.activities.SettingsActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

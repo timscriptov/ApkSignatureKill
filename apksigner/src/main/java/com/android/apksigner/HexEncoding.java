@@ -16,6 +16,8 @@
 
 package com.android.apksigner;
 
+import androidx.annotation.NonNull;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -34,6 +36,7 @@ class HexEncoding {
     /**
      * Encodes the provided data as a hexadecimal string.
      */
+    @NonNull
     public static String encode(byte[] data, int offset, int length) {
         StringBuilder result = new StringBuilder(length * 2);
         for (int i = 0; i < length; i++) {
@@ -47,6 +50,7 @@ class HexEncoding {
     /**
      * Encodes the provided data as a hexadecimal string.
      */
+    @NonNull
     public static String encode(byte[] data) {
         return encode(data, 0, data.length);
     }
@@ -54,7 +58,8 @@ class HexEncoding {
     /**
      * Encodes the remaining bytes of the provided {@link ByteBuffer} as a hexadecimal string.
      */
-    public static String encodeRemaining(ByteBuffer data) {
+    @NonNull
+    public static String encodeRemaining(@NonNull ByteBuffer data) {
         return encode(data.array(), data.arrayOffset() + data.position(), data.remaining());
     }
 }

@@ -2,8 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/settings"
-        android:icon="@drawable/ic_settings"
-        android:title="Settings"
-        app:showAsAction="always"/>
+        android:id="@+id/donate"
+        android:icon="@drawable/ic_donate"
+        android:title="Donate"/>
+    <item
+        android:id="@+id/github"
+        android:icon="@drawable/ic_git"
+        android:title="GitHub"/>
+    <item
+        android:id="@+id/about"
+        android:icon="@drawable/ic_about"
+        android:title="About"/>
+    <item
+        android:id="@+id/exit"
+        android:icon="@drawable/ic_exit"
+        android:title="Exit"/>
 </menu>

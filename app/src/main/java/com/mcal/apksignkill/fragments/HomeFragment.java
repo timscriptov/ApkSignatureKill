@@ -25,19 +25,18 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.AppCompatRadioButton;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.Fragment;
 
 import com.developer.filepicker.model.DialogConfigs;
 import com.developer.filepicker.model.DialogProperties;
 import com.developer.filepicker.view.FilePickerDialog;
+import com.mcal.apksigner.ApkSigner;
+import com.mcal.apksignkill.App;
 import com.mcal.apksignkill.R;
-import com.mcal.apksignkill.signer.SignatureTool;
-import com.mcal.apksignkill.ui.CustomSignDialog;
 import com.mcal.apksignkill.utils.BinSignatureTool;
-import com.mcal.apksignkill.utils.DensityUtil;
 import com.mcal.apksignkill.utils.MyAppInfo;
-import com.mcal.apksignkill.utils.Preferences;
 import com.mcal.apksignkill.utils.SuperSignatureTool;
 
 import org.jetbrains.annotations.NotNull;
@@ -49,8 +48,23 @@ public class HomeFragment extends Fragment {
     private AppCompatImageView apkIcon;
     private AppCompatTextView apkName;
     private AppCompatTextView apkPack;
-    private AppCompatCheckBox binSignatureTool;
-    private AppCompatCheckBox superSignatureTool;
+
+    View.OnClickListener radioButtonClickListener = v -> {
+        AppCompatRadioButton rb = (AppCompatRadioButton) v;
+        switch (rb.getId()) {
+            case R.id.binMtSignatureKill:
+                App.getPreferences().edit().putBoolean("setBinMtSignatureKill", true);
+                App.getPreferences().edit().putBoolean("setSuperSignatureKill", false);
+                break;
+            case R.id.superSignatureKill:
+                App.getPreferences().edit().putBoolean("setSuperSignatureKill", true);
+                App.getPreferences().edit().putBoolean("setBinMtSignatureKill", false);
+                break;
+
+            default:
+                break;
+        }
+    };
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,7 +75,7 @@ public class HomeFragment extends Fragment {
         apkPack = mView.findViewById(R.id.apkPackage);
         apkPath = mView.findViewById(R.id.apkPath);
 
-        apkPath.setText(Preferences.isApkPath());
+        apkPath.setText(App.getPreferences().getString("ApkPath", ""));
         apkPath.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence p1, int p2, int p3, int p4) {
@@ -88,39 +102,15 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        binSignatureTool = mView.findViewById(R.id.binMtSignatureKill);
-        binSignatureTool.setChecked(Preferences.getBinMtSignatureKill());
-        binSignatureTool.setOnCheckedChangeListener((p1, p2) -> {
-            Preferences.setBinMtSignatureKill(p2);
-        });
-
-        superSignatureTool = mView.findViewById(R.id.superSignatureKill);
-        superSignatureTool.setChecked(Preferences.getSuperSignatureKill());
-        superSignatureTool.setOnCheckedChangeListener((p1, p2) -> {
-            Preferences.setSuperSignatureKill(p2);
-        });
-
         (mView.findViewById(R.id.browseApk)).setOnClickListener(p1 -> {
             browseApk();
         });
 
         (mView.findViewById(R.id.hookRun)).setOnClickListener(p1 -> {
-            runProcess();
-        });
-
-        (mView.findViewById(R.id.menu)).setOnClickListener(p1 -> {
-            show2();
+            hookRun();
         });
 
         return mView;
-    }
-
-    private void runProcess() {
-        if (Preferences.isCustomSignature()) {
-            new CustomSignDialog((p1, p2) -> hookRun()).show(getContext());
-        } else {
-            hookRun();
-        }
     }
 
     public void browseApk() {
@@ -146,98 +136,6 @@ public class HomeFragment extends Fragment {
         dialog.show();
     }
 
-    private void show2() {
-        Dialog bottomDialog = new Dialog(getContext(), R.style.BottomDialog);
-        View contentView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_content_circle, null);
-
-        (contentView.findViewById(R.id.donate)).setOnClickListener(p1 -> {
-            donate();
-        });
-
-        (contentView.findViewById(R.id.git)).setOnClickListener(p1 -> {
-            String url = "https://github.com/TimScriptov/ApkSignatureKill";
-            Intent intent1 = new Intent(Intent.ACTION_VIEW);
-            intent1.setData(Uri.parse(url));
-            startActivity(intent1);
-        });
-
-        (contentView.findViewById(R.id.about)).setOnClickListener(p1 -> {
-            about();
-        });
-
-        (contentView.findViewById(R.id.exit)).setOnClickListener(p1 -> {
-            System.exit(0);
-        });
-
-        bottomDialog.setContentView(contentView);
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentView.getLayoutParams();
-        params.width = getResources().getDisplayMetrics().widthPixels - DensityUtil.dp2px(getContext(), 16f);
-        params.bottomMargin = DensityUtil.dp2px(getContext(), 8f);
-        contentView.setLayoutParams(params);
-        bottomDialog.setCanceledOnTouchOutside(true);
-        bottomDialog.getWindow().setGravity(Gravity.BOTTOM);
-        bottomDialog.getWindow().setWindowAnimations(R.style.BottomDialog_Animation);
-        bottomDialog.show();
-    }
-
-    private void about() {
-        Dialog bottomDialog = new Dialog(getContext(), R.style.BottomDialog);
-
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        LinearLayout contentView = new LinearLayout(getActivity());
-        contentView.setBackgroundResource(R.drawable.shape_dialog);
-        contentView.setOrientation(LinearLayout.VERTICAL);
-        contentView.setPadding(40, 0, 40, 0);
-        contentView.setLayoutParams(layoutParams);
-        final AppCompatTextView msg = new AppCompatTextView(getContext());
-        msg.setText(R.string.about);
-        contentView.addView(msg);
-
-        bottomDialog.setContentView(contentView);
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentView.getLayoutParams();
-        params.width = getResources().getDisplayMetrics().widthPixels - DensityUtil.dp2px(getContext(), 16f);
-        params.bottomMargin = DensityUtil.dp2px(getContext(), 8f);
-        contentView.setLayoutParams(params);
-        bottomDialog.setCanceledOnTouchOutside(true);
-        bottomDialog.getWindow().setGravity(Gravity.BOTTOM);
-        bottomDialog.getWindow().setWindowAnimations(R.style.BottomDialog_Animation);
-        bottomDialog.show();
-    }
-
-    private void donate() {
-        Dialog bottomDialog = new Dialog(getContext(), R.style.BottomDialog);
-
-        View contentView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_content_donate_circle, null);
-        ClipboardManager cmb = (ClipboardManager)getContext().getSystemService ( Context.CLIPBOARD_SERVICE );
-
-        (contentView.findViewById(R.id.qiwi)).setOnClickListener(p1 -> {
-            cmb.setText("4693 9575 5605 5692");
-            Toast.makeText(getContext(), "Скопирован в буфер обмена", Toast.LENGTH_LONG ).show ( );
-        });
-
-        (contentView.findViewById(R.id.visa)).setOnClickListener(p1 -> {
-            cmb.setText("4276 3200 1538 3012");
-            Toast.makeText(getContext(), "Скопирован в буфер обмена", Toast.LENGTH_LONG ).show ( );
-        });
-
-        (contentView.findViewById(R.id.paypal)).setOnClickListener(p1 -> {
-            String url = "https://www.paypal.me/timscriptov";
-            Intent intent1 = new Intent(Intent.ACTION_VIEW);
-            intent1.setData(Uri.parse(url));
-            startActivity(intent1);
-        });
-
-        bottomDialog.setContentView(contentView);
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) contentView.getLayoutParams();
-        params.width = getResources().getDisplayMetrics().widthPixels - DensityUtil.dp2px(getContext(), 16f);
-        params.bottomMargin = DensityUtil.dp2px(getContext(), 8f);
-        contentView.setLayoutParams(params);
-        bottomDialog.setCanceledOnTouchOutside(true);
-        bottomDialog.getWindow().setGravity(Gravity.BOTTOM);
-        bottomDialog.getWindow().setWindowAnimations(R.style.BottomDialog_Animation);
-        bottomDialog.show();
-    }
-
     public void hookRun() {
         ProgressDialog progressDialog = new ProgressDialog(getContext());
         progressDialog.setTitle("Обработка...");
@@ -260,11 +158,11 @@ public class HomeFragment extends Fragment {
 
                 new File(outApk);
                 try {
-                    if (Preferences.getBinMtSignatureKill()) {
+                    if (App.getPreferences().getBoolean("getBinMtSignatureKill", true)) {
                         BinSignatureTool binSignatureTool = new BinSignatureTool(getContext());
                         binSignatureTool.setPath(srcApk, outApk);
                         binSignatureTool.Kill();
-                    } else if (Preferences.getSuperSignatureKill()) {
+                    } else if (App.getPreferences().getBoolean("getSuperSignatureKill", false)) {
                         SuperSignatureTool signatureTool = new SuperSignatureTool(getContext());
                         signatureTool.setPath(srcApk, outApk);
                         signatureTool.Kill();
@@ -272,9 +170,8 @@ public class HomeFragment extends Fragment {
                 } catch (Exception e) {
                     toast("Обработка не удалась:" + e.toString());
                 } finally {
-                    if (SignatureTool.sign(getContext(), new File(outApk), new File(outApk.replace(".apk", "_sign.apk")))) {
-                        dialogFinished();
-                    }
+                    new ApkSigner(getContext()).signApk(outApk, outApk.replace(".apk", "_sign.apk"));
+                    dialogFinished();
                 }
                 mHandler.sendEmptyMessage(0);
                 Looper.loop();

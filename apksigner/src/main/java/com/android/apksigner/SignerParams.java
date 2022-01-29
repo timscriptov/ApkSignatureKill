@@ -16,6 +16,8 @@
 
 package com.android.apksigner;
 
+import androidx.annotation.NonNull;
+
 import com.android.apksig.SigningCertificateLineage.SignerCapabilities;
 import com.android.apksig.internal.util.X509CertificateUtils;
 
@@ -103,7 +105,7 @@ public class SignerParams {
         }
     }
 
-    private static Key getKeyStoreKey(KeyStore ks, String keyAlias, List<char[]> passwords)
+    private static Key getKeyStoreKey(KeyStore ks, String keyAlias, @NonNull List<char[]> passwords)
             throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
         UnrecoverableKeyException lastFailure = null;
         for (char[] password : passwords) {
@@ -121,7 +123,7 @@ public class SignerParams {
     }
 
     private static PKCS8EncodedKeySpec decryptPkcs8EncodedKey(
-            EncryptedPrivateKeyInfo encryptedPrivateKeyInfo, List<char[]> passwords)
+            @NonNull EncryptedPrivateKeyInfo encryptedPrivateKeyInfo, @NonNull List<char[]> passwords)
             throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
         SecretKeyFactory keyFactory =
                 SecretKeyFactory.getInstance(encryptedPrivateKeyInfo.getAlgName());
@@ -152,18 +154,22 @@ public class SignerParams {
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(spec);
         } catch (InvalidKeySpecException expected) {
+            expected.printStackTrace();
         }
         try {
             return KeyFactory.getInstance("EC").generatePrivate(spec);
         } catch (InvalidKeySpecException expected) {
+            expected.printStackTrace();
         }
         try {
             return KeyFactory.getInstance("DSA").generatePrivate(spec);
         } catch (InvalidKeySpecException expected) {
+            expected.printStackTrace();
         }
         throw new InvalidKeySpecException("Not an RSA, EC, or DSA private key");
     }
 
+    @NonNull
     private static byte[] readFully(File file) throws IOException {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         try (FileInputStream in = new FileInputStream(file)) {
@@ -172,7 +178,7 @@ public class SignerParams {
         return result.toByteArray();
     }
 
-    private static void drain(InputStream in, OutputStream out) throws IOException {
+    private static void drain(@NonNull InputStream in, OutputStream out) throws IOException {
         byte[] buf = new byte[65536];
         int chunkSize;
         while ((chunkSize = in.read(buf)) != -1) {
